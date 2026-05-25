@@ -366,8 +366,8 @@
           <div class="sec-label">ปริมาณและราคา</div>
           <div class="form-grid">
             <div class="fg">
-              <label for="j-qty">จำนวนชิ้นงาน <span style="color:#C53030">*</span></label>
-              <input type="number" id="j-qty" class="req-field" placeholder="0" min="0" />
+              <label for="j-qty">จำนวนชิ้นงาน</label>
+              <input type="number" id="j-qty" placeholder="0" min="0" />
             </div>
             <div class="fg">
               <label for="j-weight">น้ำหนัก (กิโลกรัม)</label>
@@ -753,8 +753,7 @@ function renderJobsTable(rows) {
       <th style="width:70px">สี</th>
       <th style="width:65px">จำนวน</th>
       <th style="width:65px">น้ำหนัก</th>
-      <th style="width:120px">สถานะ</th>
-      <th style="width:60px">แก้ไข</th>
+      <th style="width:140px">สถานะงาน</th>
     </tr></thead>
     <tbody>${rows.map(j => `<tr>
       <td style="font-weight:500;color:var(--brand);">${j.jobId||''}</td>
@@ -766,14 +765,13 @@ function renderJobsTable(rows) {
       <td>${j.color||'—'}</td>
       <td style="text-align:right;">${j.qty||0}</td>
       <td style="text-align:right;">${j.weight||0} kg</td>
-      <td><span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;${STATUS_COLOR[j.status]||''}">${j.status||'—'}</span></td>
       <td>
-        <select class="btn btn-sm" style="padding:3px 6px;font-size:11px;border:1px solid var(--border-md);"
-          onchange="quickUpdateStatus(${j.rowIndex}, this.value)" title="เปลี่ยนสถานะ">
-          <option value="รอดำเนินการ" ${j.status==='รอดำเนินการ'?'selected':''}>รอ</option>
-          <option value="กำลังชุบ"    ${j.status==='กำลังชุบ'?'selected':''}>ชุบ</option>
-          <option value="เสร็จแล้ว"   ${j.status==='เสร็จแล้ว'?'selected':''}>เสร็จ</option>
-          <option value="รอรับสินค้า" ${j.status==='รอรับสินค้า'?'selected':''}>รอรับ</option>
+        <select style="font-size:12px;padding:4px 8px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;${STATUS_COLOR[j.status]||''}"
+          onchange="quickUpdateStatus(${j.rowIndex}, this.value)">
+          <option value="รอดำเนินการ" ${j.status==='รอดำเนินการ'?'selected':''}>รอดำเนินการ</option>
+          <option value="กำลังชุบ"    ${j.status==='กำลังชุบ'?'selected':''}>กำลังชุบ</option>
+          <option value="เสร็จแล้ว"   ${j.status==='เสร็จแล้ว'?'selected':''}>เสร็จแล้ว</option>
+          <option value="รอรับสินค้า" ${j.status==='รอรับสินค้า'?'selected':''}>รอรับสินค้า</option>
         </select>
       </td>
     </tr>`).join('')}</tbody></table>`;
@@ -845,7 +843,6 @@ async function saveJob() {
   if (!desc)     { document.getElementById('j-desc').classList.add('field-error');     hasError=true; }
   if (!platType) { document.getElementById('j-plattype').classList.add('field-error'); hasError=true; }
   if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
-  if (!qty)      { document.getElementById('j-qty').classList.add('field-error');      hasError=true; }
   if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
 
   const dataObj = {
