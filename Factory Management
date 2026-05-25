@@ -268,7 +268,7 @@
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxYZWBpsFdYRcLoLBnVl9_HhHltFZn7UavT0Rjq_2bgZfpG6WA4wOc15CNfNqsF72QW7A/exec';
+const API = 'https://script.google.com/macros/s/AKfycbzlLCw2DerRyOgpUtmklrjG_XbIVd15qgi4kolwNRhupeFwX0UopRv5967igrHXghuP/exec';
 let allCustomers = [];
 let cbCounter = 0;
 
