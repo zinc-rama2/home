@@ -261,7 +261,142 @@
       </div>
 
       <!-- COMING SOON PAGES -->
-      <div class="page" id="page-jobs"><div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>บันทึกงานชุบ / รับงาน</h3><p>กำลังพัฒนา</p></div></div>
+      <div class="page" id="page-jobs">
+
+        <div class="card">
+          <div class="ov" id="ov-jobs-list"><span class="spin">↻</span> กำลังโหลด...</div>
+          <div class="card-head">
+            <div>
+              <div class="card-title">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>รายการงานทั้งหมด
+              </div>
+              <div class="card-sub" id="jobs-count">กำลังโหลด...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="filter-status" onchange="filterJobs()" style="font-size:12px;padding:5px 8px;width:auto;">
+                <option value="">ทุกสถานะ</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="กำลังชุบ">กำลังชุบ</option>
+                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="jobs-table-body">
+            <div class="empty"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ยังไม่มีรายการงาน</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ov" id="ov-job-form"><span class="spin">↻</span> กำลังบันทึก...</div>
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>บันทึกรับงานใหม่
+            </div>
+            <span style="font-size:11px;color:var(--text-3);">* จำเป็นต้องกรอก</span>
+          </div>
+
+          <div class="sec-label">ข้อมูลงาน</div>
+          <div class="form-grid">
+            <div class="fg">
+              <label for="j-datein">วันที่รับงาน <span style="color:#C53030">*</span></label>
+              <input type="date" id="j-datein" class="req-field" />
+            </div>
+            <div class="fg">
+              <label for="j-datewant">วันที่ต้องการรับสินค้า <span style="color:#C53030">*</span></label>
+              <input type="date" id="j-datewant" class="req-field" />
+            </div>
+            <div class="fg">
+              <label for="j-status">สถานะงาน <span style="color:#C53030">*</span></label>
+              <select id="j-status">
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="กำลังชุบ">กำลังชุบ</option>
+                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sec-label">ข้อมูลลูกค้า</div>
+          <div class="form-grid cols-2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+            <div class="fg">
+              <label for="j-custcode">รหัสลูกค้า</label>
+              <div style="position:relative;">
+                <input type="text" id="j-custcode" placeholder="พิมพ์เพื่อค้นหาลูกค้า" oninput="searchJobCustomer()" autocomplete="off" />
+                <div id="j-cust-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--r);z-index:50;max-height:180px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
+              </div>
+            </div>
+            <div class="fg">
+              <label for="j-custname">ชื่อสถานประกอบการ <span style="color:#C53030">*</span></label>
+              <input type="text" id="j-custname" class="req-field" placeholder="ชื่อบริษัท / ร้านค้า" />
+            </div>
+          </div>
+
+          <div class="sec-label">รายละเอียดชิ้นงาน</div>
+          <div class="form-grid">
+            <div class="fg s3">
+              <label for="j-desc">คำอธิบายชิ้นงาน <span style="color:#C53030">*</span></label>
+              <textarea id="j-desc" class="req-field" placeholder="อธิบายลักษณะชิ้นงาน เช่น น็อต M8 x 30mm สแตนเลส"></textarea>
+            </div>
+            <div class="fg">
+              <label for="j-plattype">ประเภทการชุบ <span style="color:#C53030">*</span></label>
+              <select id="j-plattype" class="req-field">
+                <option value="">-- เลือก --</option>
+                <option value="ซิงค์ (Zinc)">ซิงค์ (Zinc)</option>
+                <option value="โครม 3 (Cr3)">โครม 3 (Cr3)</option>
+                <option value="โครม 6 (Cr6)">โครม 6 (Cr6)</option>
+                <option value="EDP">EDP</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label for="j-color">สีของชิ้นงาน <span style="color:#C53030">*</span></label>
+              <select id="j-color" class="req-field" onchange="toggleColorNote()">
+                <option value="">-- เลือก --</option>
+                <option value="สีขาว">สีขาว</option>
+                <option value="สีรุ้ง">สีรุ้ง</option>
+                <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+              </select>
+            </div>
+            <div class="fg" id="j-colornote-wrap" style="display:none;">
+              <label for="j-colornote">ระบุสี</label>
+              <input type="text" id="j-colornote" placeholder="ระบุสีที่ต้องการ" />
+            </div>
+          </div>
+
+          <div class="sec-label">ปริมาณและราคา</div>
+          <div class="form-grid">
+            <div class="fg">
+              <label for="j-qty">จำนวนชิ้นงาน <span style="color:#C53030">*</span></label>
+              <input type="number" id="j-qty" class="req-field" placeholder="0" min="0" />
+            </div>
+            <div class="fg">
+              <label for="j-weight">น้ำหนัก (กิโลกรัม)</label>
+              <input type="number" id="j-weight" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <div class="fg">
+              <label for="j-price">ราคาต่อหน่วย (บาท)</label>
+              <input type="number" id="j-price" placeholder="0.00" min="0" step="0.01" />
+            </div>
+          </div>
+
+          <div class="sec-label">หมายเหตุ</div>
+          <div class="form-grid">
+            <div class="fg s3">
+              <label for="j-note">หมายเหตุ</label>
+              <textarea id="j-note" placeholder="บันทึกเพิ่มเติม"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn" onclick="clearJobForm()">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>ล้างฟอร์ม
+            </button>
+            <button class="btn btn-primary" onclick="saveJob()">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>บันทึกงาน → Google Sheets
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="page" id="page-status"><div class="coming-soon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><h3>ติดตามสถานะงาน</h3><p>กำลังพัฒนา</p></div></div>
       <div class="page" id="page-invoice"><div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/></svg><h3>ออกบิล / ใบแจ้งหนี้</h3><p>กำลังพัฒนา</p></div></div>
       <div class="page" id="page-finance"><div class="coming-soon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h3>บันทึกรายรับ-รายจ่าย</h3><p>กำลังพัฒนา</p></div></div>
@@ -290,6 +425,7 @@ function goPage(id, el) {
   document.getElementById('topbar-title').textContent = PAGE_TITLES[id] || id;
   if (el) el.classList.add('active');
   if (id === 'customers') loadCustomers();
+  if (id === 'jobs') { loadJobs(); clearJobForm(); }
   if (id === 'dashboard') { document.getElementById('dash-customers').textContent = allCustomers.length || '—'; }
 }
 
@@ -564,7 +700,208 @@ async function saveCustomer() {
   setOv('ov-form', false);
 }
 
+
+// ═══════════════════════════════════════
+// JOBS — รับงาน / ชุบ
+// ═══════════════════════════════════════
+let allJobs = [];
+
+async function loadJobs() {
+  setOv('ov-jobs-list', true);
+  try {
+    const data = await jsonpGet(API + '?action=getJobs');
+    if (data.status === 'ok') {
+      allJobs = data.rows || [];
+      document.getElementById('jobs-count').textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
+      renderJobsTable(allJobs);
+    } else {
+      toast('โหลดข้อมูลงานไม่สำเร็จ: ' + (data.message||''), true);
+    }
+  } catch(e) {
+    toast('ไม่สามารถโหลดข้อมูลงานได้', true);
+  }
+  setOv('ov-jobs-list', false);
+}
+
+function filterJobs() {
+  const s = document.getElementById('filter-status').value;
+  const filtered = s ? allJobs.filter(j => j.status === s) : allJobs;
+  renderJobsTable(filtered);
+}
+
+const STATUS_COLOR = {
+  'รอดำเนินการ': 'background:#FFF3CD;color:#856404;',
+  'กำลังชุบ':   'background:#CCE5FF;color:#004085;',
+  'เสร็จแล้ว':  'background:#D4EDDA;color:#155724;',
+  'รอรับสินค้า':'background:#F8D7DA;color:#721C24;',
+};
+
+function renderJobsTable(rows) {
+  const el = document.getElementById('jobs-table-body');
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>ไม่มีรายการที่ตรงกัน</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th style="width:110px">Job ID</th>
+      <th style="width:90px">วันที่รับ</th>
+      <th style="width:90px">วันที่ต้องการ</th>
+      <th style="width:130px">ลูกค้า</th>
+      <th style="width:150px">ชิ้นงาน</th>
+      <th style="width:100px">ประเภทชุบ</th>
+      <th style="width:70px">สี</th>
+      <th style="width:65px">จำนวน</th>
+      <th style="width:65px">น้ำหนัก</th>
+      <th style="width:120px">สถานะ</th>
+      <th style="width:60px">แก้ไข</th>
+    </tr></thead>
+    <tbody>${rows.map(j => `<tr>
+      <td style="font-weight:500;color:var(--brand);">${j.jobId||''}</td>
+      <td>${j.dateIn||'—'}</td>
+      <td>${j.dateWant||'—'}</td>
+      <td>${j.custName||'—'}</td>
+      <td style="white-space:normal;line-height:1.4;">${j.desc||'—'}</td>
+      <td>${j.platType||'—'}</td>
+      <td>${j.color||'—'}</td>
+      <td style="text-align:right;">${j.qty||0}</td>
+      <td style="text-align:right;">${j.weight||0} kg</td>
+      <td><span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;${STATUS_COLOR[j.status]||''}">${j.status||'—'}</span></td>
+      <td>
+        <select class="btn btn-sm" style="padding:3px 6px;font-size:11px;border:1px solid var(--border-md);"
+          onchange="quickUpdateStatus(${j.rowIndex}, this.value)" title="เปลี่ยนสถานะ">
+          <option value="รอดำเนินการ" ${j.status==='รอดำเนินการ'?'selected':''}>รอ</option>
+          <option value="กำลังชุบ"    ${j.status==='กำลังชุบ'?'selected':''}>ชุบ</option>
+          <option value="เสร็จแล้ว"   ${j.status==='เสร็จแล้ว'?'selected':''}>เสร็จ</option>
+          <option value="รอรับสินค้า" ${j.status==='รอรับสินค้า'?'selected':''}>รอรับ</option>
+        </select>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+async function quickUpdateStatus(rowIndex, newStatus) {
+  try {
+    const data = { rowIndex, status: newStatus };
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    const result = await jsonpGet(API + '?action=updateJobStatus&data=' + encoded);
+    if (result.status === 'ok') {
+      toast('อัปเดตสถานะเป็น: ' + newStatus);
+      const job = allJobs.find(j => j.rowIndex === rowIndex);
+      if (job) job.status = newStatus;
+    } else {
+      toast('อัปเดตไม่สำเร็จ', true);
+      loadJobs();
+    }
+  } catch(e) {
+    toast('เกิดข้อผิดพลาด', true);
+  }
+}
+
+function searchJobCustomer() {
+  const q = document.getElementById('j-custcode').value.trim().toLowerCase();
+  const dd = document.getElementById('j-cust-dropdown');
+  if (!q) { dd.style.display='none'; return; }
+  const filtered = allCustomers.filter(c =>
+    (c.code||'').toLowerCase().includes(q) ||
+    (c.name||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  if (!filtered.length) { dd.style.display='none'; return; }
+  dd.style.display = 'block';
+  dd.innerHTML = filtered.map(c => `
+    <div onclick="selectJobCustomer('${c.code}','${c.name.replace(/'/g,"\'")}')"
+      style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"
+      onmouseover="this.style.background='var(--brand-light)'" onmouseout="this.style.background=''">
+      <span style="font-weight:600;color:var(--brand);">${c.code}</span>
+      <span style="color:var(--text-2);margin-left:8px;">${c.name}</span>
+    </div>`).join('');
+}
+
+function selectJobCustomer(code, name) {
+  document.getElementById('j-custcode').value  = code;
+  document.getElementById('j-custname').value  = name;
+  document.getElementById('j-cust-dropdown').style.display = 'none';
+}
+
+function toggleColorNote() {
+  const val = document.getElementById('j-color').value;
+  const wrap = document.getElementById('j-colornote-wrap');
+  wrap.style.display = val === 'อื่นๆ' ? 'flex' : 'none';
+}
+
+async function saveJob() {
+  document.querySelectorAll('#page-jobs .req-field').forEach(el => el.classList.remove('field-error'));
+  const dateIn   = document.getElementById('j-datein').value;
+  const dateWant = document.getElementById('j-datewant').value;
+  const custName = document.getElementById('j-custname').value.trim();
+  const desc     = document.getElementById('j-desc').value.trim();
+  const platType = document.getElementById('j-plattype').value;
+  const color    = document.getElementById('j-color').value;
+  const qty      = document.getElementById('j-qty').value;
+
+  let hasError = false;
+  if (!dateIn)   { document.getElementById('j-datein').classList.add('field-error');   hasError=true; }
+  if (!dateWant) { document.getElementById('j-datewant').classList.add('field-error'); hasError=true; }
+  if (!custName) { document.getElementById('j-custname').classList.add('field-error'); hasError=true; }
+  if (!desc)     { document.getElementById('j-desc').classList.add('field-error');     hasError=true; }
+  if (!platType) { document.getElementById('j-plattype').classList.add('field-error'); hasError=true; }
+  if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
+  if (!qty)      { document.getElementById('j-qty').classList.add('field-error');      hasError=true; }
+  if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
+
+  const dataObj = {
+    dateIn, dateWant,
+    custCode:  document.getElementById('j-custcode').value,
+    custName,
+    desc,
+    platType,
+    color,
+    colorNote: document.getElementById('j-colornote').value,
+    qty:       parseFloat(qty)||0,
+    weight:    parseFloat(document.getElementById('j-weight').value)||0,
+    price:     parseFloat(document.getElementById('j-price').value)||0,
+    status:    document.getElementById('j-status').value,
+    note:      document.getElementById('j-note').value,
+  };
+
+  setOv('ov-job-form', true);
+  try {
+    const encoded = encodeURIComponent(JSON.stringify(dataObj));
+    const result  = await jsonpGet(API + '?action=saveJob&data=' + encoded);
+    if (result.status === 'ok') {
+      toast('บันทึกงานสำเร็จ! Job ID: ' + result.jobId);
+      clearJobForm();
+      loadJobs();
+    } else {
+      toast('บันทึกไม่สำเร็จ: ' + (result.message||''), true);
+    }
+  } catch(e) {
+    toast('เกิดข้อผิดพลาดในการบันทึก', true);
+  }
+  setOv('ov-job-form', false);
+}
+
+function clearJobForm() {
+  ['j-datein','j-datewant','j-custcode','j-custname','j-desc','j-colornote','j-qty','j-weight','j-price','j-note']
+    .forEach(id => { document.getElementById(id).value=''; });
+  document.getElementById('j-plattype').value = '';
+  document.getElementById('j-color').value = '';
+  document.getElementById('j-status').value = 'รอดำเนินการ';
+  document.getElementById('j-colornote-wrap').style.display = 'none';
+  document.querySelectorAll('#page-jobs .req-field').forEach(el => el.classList.remove('field-error'));
+  // ตั้งค่า default วันที่รับงาน = วันนี้
+  document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
+}
+
+// ปิด dropdown เมื่อคลิกที่อื่น
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('j-cust-dropdown');
+  if (dd && !e.target.closest('#j-custcode') && !e.target.closest('#j-cust-dropdown')) {
+    dd.style.display = 'none';
+  }
+});
+
 loadCustomers();
+
 </script>
 </body>
 </html>
