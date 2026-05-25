@@ -117,6 +117,8 @@
   .stat-sub{font-size:11px;color:var(--text-3);margin-top:4px;}
   .coming-soon{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;border:2px dashed var(--border-md);border-radius:var(--rl);color:var(--text-3);}
   .coming-soon svg{width:48px;height:48px;stroke:var(--border-md);fill:none;stroke-width:1.5;margin-bottom:12px;}
+  .field-error{border-color:#C53030 !important;background:#FFF5F5 !important;}
+  .field-error:focus{box-shadow:0 0 0 3px rgba(197,48,48,.15) !important;}
   .coming-soon h3{font-size:16px;font-weight:600;color:var(--text-2);margin-bottom:6px;}
 </style>
 </head>
@@ -213,6 +215,7 @@
           <div id="results-wrap" style="margin-top:12px;display:none;">
             <div class="sec-label">ผลการค้นหา</div>
             <div class="tbl-wrap" id="results-body"></div>
+            <div id="customer-detail" style="display:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;"></div>
           </div>
         </div>
 
@@ -227,22 +230,22 @@
           <div class="sec-label">ข้อมูลสถานประกอบการ</div>
           <div class="form-grid">
             <div class="fg"><label>รหัสลูกค้า <span style="font-weight:400;color:var(--text-3)">(ระบบกำหนด)</span></label><input type="text" id="f-code" placeholder="ระบบกำหนดอัตโนมัติ" disabled style="opacity:.5;cursor:not-allowed;" /></div>
-            <div class="fg s2"><label for="f-name">ชื่อสถานประกอบการ *</label><input type="text" id="f-name" placeholder="ชื่อบริษัท / ร้านค้า" /></div>
-            <div class="fg s3"><label for="f-addr">ที่อยู่</label><textarea id="f-addr" placeholder="ที่อยู่สถานประกอบการ"></textarea></div>
-            <div class="fg"><label for="f-biztel">เบอร์สถานประกอบการ</label><input type="tel" id="f-biztel" placeholder="02-xxx-xxxx" /></div>
-            <div class="fg"><label for="f-contact">ชื่อผู้ประสานงาน</label><input type="text" id="f-contact" placeholder="ชื่อ-นามสกุล" /></div>
-            <div class="fg"><label for="f-tel">เบอร์ผู้ประสานงาน</label><input type="tel" id="f-tel" placeholder="08x-xxx-xxxx" /></div>
+            <div class="fg s2"><label for="f-name">ชื่อสถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-name" placeholder="ชื่อบริษัท / ร้านค้า" /></div>
+            <div class="fg s3"><label for="f-addr">ที่อยู่ <span style="color:#C53030">*</span></label><textarea id="f-addr" class="req-field" placeholder="ที่อยู่สถานประกอบการ"></textarea></div>
+            <div class="fg"><label for="f-biztel">เบอร์สถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-biztel" class="req-field" placeholder="02-xxx-xxxx" inputmode="numeric" /></div>
+            <div class="fg"><label for="f-contact">ชื่อผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-contact" class="req-field" placeholder="ชื่อ-นามสกุล" /></div>
+            <div class="fg"><label for="f-tel">เบอร์ผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-tel" class="req-field" placeholder="08x-xxx-xxxx" inputmode="numeric" /></div>
           </div>
           <div class="sec-label">การชำระเงิน</div>
           <div class="form-grid">
             <div class="fg">
-              <label for="f-paytype">ประเภทการชำระ *</label>
-              <select id="f-paytype"><option value="">-- เลือก --</option><option value="เครดิต">เครดิต</option><option value="เงินสด">เงินสด</option><option value="โอน">โอน</option></select>
+              <label for="f-paytype">ประเภทการชำระ <span style="color:#C53030">*</span></label>
+              <select id="f-paytype"><option value="">-- เลือก --</option><option value="เครดิต">เครดิต</option><option value="เงินสด / โอน">เงินสด / โอน</option></select>
             </div>
             <div class="fg"><label for="f-creditdays">จำนวนวันเครดิต</label><input type="number" id="f-creditdays" placeholder="30" min="0" /></div>
-            <div class="fg"><label for="f-billname">ชื่อบิล</label><input type="text" id="f-billname" placeholder="เช่น สิ้นเดือน" /></div>
-            <div class="fg"><label for="f-billstart">วันที่เริ่มบิล</label><input type="date" id="f-billstart" /></div>
-            <div class="fg"><label for="f-billdate">วันที่วางบิล</label><input type="date" id="f-billdate" /></div>
+            <div class="fg"><label for="f-billname">ชื่อหัวบิล</label><input type="text" id="f-billname" placeholder="เช่น บริษัท ABC จำกัด" /></div>
+            <div class="fg"><label for="f-billstart">วันที่เริ่มบิล <span style="color:#C53030">*</span></label><input type="date" id="f-billstart" class="req-field" /></div>
+            <div class="fg"><label for="f-billdate">วางบิลวันที่ (ของเดือน)</label><input type="number" id="f-billdate" placeholder="เช่น 5 = วันที่ 5 ของทุกเดือน" min="1" max="31" /></div>
           </div>
           <div class="form-actions">
             <button class="btn" onclick="clearForm()">
@@ -386,7 +389,7 @@ function clearSearch() {
 
 function pillClass(p) {
   if (p === 'เครดิต') return 'pill-credit';
-  if (p === 'เงินสด') return 'pill-cash';
+  if (p === 'เงินสด / โอน') return 'pill-cash';
   return 'pill-transfer';
 }
 
@@ -405,18 +408,60 @@ function renderTable(rows) {
       <th style="width:85px">ประเภทชำระ</th>
       <th style="width:80px">เครดิต</th>
       <th style="width:90px">เริ่มบิล</th>
+      <th style="width:80px">วางบิลวันที่</th>
       <th style="width:60px">แก้ไข</th>
     </tr></thead>
-    <tbody>${rows.map(c => `<tr>
+    <tbody>${rows.map(c => `<tr onclick='showCustomerDetail(${JSON.stringify(c).replace(/'/g, "&#39;")})' style='cursor:pointer;'>
       <td>${c.code||''}</td><td>${c.name||''}</td>
       <td>${c.contact||'—'}</td><td>${c.tel||c.biztel||'—'}</td>
       <td><span class="pill ${pillClass(c.paytype)}">${c.paytype||'—'}</span></td>
       <td>${c.creditdays ? c.creditdays+' วัน' : '—'}</td>
       <td>${c.billstart||'—'}</td>
+      <td>${c.billdate ? 'วันที่ '+c.billdate : '—'}</td>
       <td><button class="btn btn-sm" onclick='fillForm(${JSON.stringify(c)})' title="โหลดข้อมูล">
         <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button></td>
     </tr>`).join('')}</tbody></table>`;
+}
+
+function showCustomerDetail(c) {
+  const panel = document.getElementById('customer-detail');
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--text);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        ข้อมูลลูกค้า: ${c.name||''}
+      </div>
+      <button class="btn btn-sm" onclick="fillFormAndScroll(allCustomers.find(x=>x.code===\`${c.code}\`))">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        แก้ไข
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      ${detailRow('รหัสลูกค้า', c.code)}
+      ${detailRow('ชื่อสถานประกอบการ', c.name)}
+      ${detailRow('เบอร์สถานประกอบการ', c.biztel)}
+      ${detailRow('ชื่อผู้ประสานงาน', c.contact)}
+      ${detailRow('เบอร์ผู้ประสานงาน', c.tel)}
+      ${detailRow('ประเภทชำระ', c.paytype)}
+      ${detailRow('จำนวนวันเครดิต', c.creditdays ? c.creditdays+' วัน' : '—')}
+      ${detailRow('วันที่เริ่มบิล', c.billstart)}
+      ${detailRow('วางบิลวันที่', c.billdate ? 'วันที่ '+c.billdate+' ของทุกเดือน' : '—')}
+      <div style="grid-column:span 3">${detailRow('ที่อยู่', c.addr)}</div>
+    </div>`;
+}
+
+function detailRow(label, value) {
+  return `<div style="background:var(--bg);border-radius:var(--r);padding:10px 12px;">
+    <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;">${label}</div>
+    <div style="font-size:13px;color:var(--text);word-break:break-word;">${value||'—'}</div>
+  </div>`;
+}
+
+function fillFormAndScroll(c) {
+  if (!c) return;
+  fillForm(c);
 }
 
 function fillForm(c) {
@@ -442,10 +487,28 @@ function clearForm() {
 }
 
 async function saveCustomer() {
-  const code    = document.getElementById('f-code').value.trim();
-  const name    = document.getElementById('f-name').value.trim();
-  const paytype = document.getElementById('f-paytype').value;
-  if (!name || !paytype) { toast('กรุณากรอก ชื่อสถานประกอบการ / ประเภทชำระ', true); return; }
+  // ล้าง error เดิม
+  document.querySelectorAll('.req-field').forEach(el => el.classList.remove('field-error'));
+
+  const code     = document.getElementById('f-code').value.trim();
+  const name     = document.getElementById('f-name').value.trim();
+  const addr     = document.getElementById('f-addr').value.trim();
+  const biztel   = document.getElementById('f-biztel').value.trim();
+  const contact  = document.getElementById('f-contact').value.trim();
+  const tel      = document.getElementById('f-tel').value.trim();
+  const billstart= document.getElementById('f-billstart').value.trim();
+  const paytype  = document.getElementById('f-paytype').value;
+
+  // ตรวจสอบแต่ละ field บังคับ
+  let hasError = false;
+  if (!name)      { document.getElementById('f-name').classList.add('field-error');      hasError = true; }
+  if (!addr)      { document.getElementById('f-addr').classList.add('field-error');      hasError = true; }
+  if (!biztel)    { document.getElementById('f-biztel').classList.add('field-error');    hasError = true; }
+  if (!contact)   { document.getElementById('f-contact').classList.add('field-error');   hasError = true; }
+  if (!tel)       { document.getElementById('f-tel').classList.add('field-error');       hasError = true; }
+  if (!billstart) { document.getElementById('f-billstart').classList.add('field-error'); hasError = true; }
+  if (!paytype)   { document.getElementById('f-paytype').classList.add('field-error');   hasError = true; }
+  if (hasError)   { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
 
   const dataObj = {
     code, name,
@@ -454,7 +517,7 @@ async function saveCustomer() {
     contact:    document.getElementById('f-contact').value,
     tel:        document.getElementById('f-tel').value,
     billstart:  document.getElementById('f-billstart').value,
-    billdate:   document.getElementById('f-billdate').value,
+    billdate:   document.getElementById('f-billdate').value, // วันที่ของเดือน เช่น 5
     billname:   document.getElementById('f-billname').value,
     paytype,
     creditdays: document.getElementById('f-creditdays').value,
