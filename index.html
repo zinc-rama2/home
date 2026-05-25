@@ -540,6 +540,8 @@ async function saveCustomer() {
     billname:   document.getElementById('f-billname').value,
     paytype,
     creditdays: document.getElementById('f-creditdays').value,
+    mode:       document.getElementById('f-mode').value,
+    searchName: document.getElementById('f-original-name').value || name,
   };
 
   setOv('ov-form', true);
