@@ -228,6 +228,8 @@
             <span style="font-size:11px;color:var(--text-3);">* จำเป็นต้องกรอก</span>
           </div>
           <div class="sec-label">ข้อมูลสถานประกอบการ</div>
+          <input type="hidden" id="f-mode" value="insert" />
+          <input type="hidden" id="f-original-name" value="" />
           <div class="form-grid">
             <div class="fg"><label>รหัสลูกค้า <span style="font-weight:400;color:var(--text-3)">(ระบบกำหนด)</span></label><input type="text" id="f-code" placeholder="ระบบกำหนดอัตโนมัติ" disabled style="opacity:.5;cursor:not-allowed;" /></div>
             <div class="fg s2"><label for="f-name">ชื่อสถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-name" placeholder="ชื่อบริษัท / ร้านค้า" /></div>
@@ -476,7 +478,17 @@ function fillForm(c) {
   document.getElementById('f-billname').value   = c.billname  || '';
   document.getElementById('f-billstart').value  = c.billstart || '';
   document.getElementById('f-billdate').value   = c.billdate  || '';
-  toast('โหลดข้อมูล: ' + c.name);
+
+  // ตั้ง mode update และเก็บชื่อเดิมสำหรับค้นหาใน sheet
+  document.getElementById('f-mode').value = 'update';
+  document.getElementById('f-original-name').value = c.name || '';
+
+  // เปลี่ยนปุ่มให้รู้ว่ากำลัง update
+  const saveBtn = document.querySelector('#page-customers .btn-primary:last-of-type');
+  if (saveBtn) {
+    saveBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>อัปเดตข้อมูล → Google Sheets';
+  }
+  toast('โหลดข้อมูล: ' + c.name + ' — แก้ไขแล้วกด "อัปเดตข้อมูล"');
   document.querySelector('#page-customers .card:last-child').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -484,6 +496,13 @@ function clearForm() {
   ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays']
     .forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('f-paytype').value = '';
+  document.getElementById('f-mode').value = 'insert';
+  document.getElementById('f-original-name').value = '';
+  document.querySelectorAll('.req-field').forEach(el => el.classList.remove('field-error'));
+  const saveBtn = document.querySelector('#page-customers .btn-primary:last-of-type');
+  if (saveBtn) {
+    saveBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>บันทึก → Google Sheets';
+  }
 }
 
 async function saveCustomer() {
@@ -528,7 +547,8 @@ async function saveCustomer() {
     const encoded = encodeURIComponent(JSON.stringify(dataObj));
     const result  = await jsonpGet(API + '?action=saveCustomer&data=' + encoded);
     if (result.status === 'ok') {
-      toast('บันทึกสำเร็จ: ' + name);
+      const action = result.action === 'updated' ? 'อัปเดต' : 'เพิ่ม';
+      toast(action + 'ข้อมูลสำเร็จ: ' + name);
       clearForm();
       loadCustomers();
     } else if (result.status === 'duplicate') {
