@@ -123,7 +123,43 @@
 </style>
 </head>
 <body>
-<div class="app">
+<!-- Permission Gate -->
+<div id="permission-gate" style="display:none;position:fixed;inset:0;background:#F4F6F9;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:40px 48px;
+    text-align:center;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.1);">
+    <div style="width:48px;height:48px;background:#185FA5;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div id="perm-title" style="font-size:18px;font-weight:600;color:#1A202C;margin-bottom:8px;">ระบบโรงชุบ</div>
+    <div id="perm-msg" style="font-size:13px;color:#718096;margin-bottom:24px;">กำลังตรวจสอบสิทธิ์การใช้งาน...</div>
+    <div id="perm-email-wrap" style="display:none;flex-direction:column;gap:10px;">
+      <input type="email" id="perm-email-input" placeholder="กรอกอีเมล์ Google ของคุณ"
+        style="font-size:13px;padding:10px 12px;border:1px solid #CBD5E1;border-radius:8px;width:100%;outline:none;" />
+      <button onclick="submitPermissionCheck()"
+        style="background:#185FA5;color:#fff;border:none;border-radius:8px;padding:10px;
+        font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit;">
+        เข้าสู่ระบบ
+      </button>
+    </div>
+    <div id="perm-denied" style="display:none;">
+      <div style="background:#FCEBEB;border-radius:8px;padding:12px 16px;margin-bottom:12px;">
+        <div style="font-size:13px;color:#A32D2D;font-weight:500;" id="perm-denied-msg">ไม่มีสิทธิ์ใช้งาน</div>
+      </div>
+      <button onclick="retryPermission()"
+        style="background:transparent;border:1px solid #CBD5E1;border-radius:8px;padding:8px 16px;
+        font-size:13px;cursor:pointer;font-family:inherit;">
+        ลองอีเมล์อื่น
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none;">
 
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -466,15 +502,15 @@
           </div>
           <div class="form-grid">
             <div class="fg" id="j-qty-wrap">
-              <label for="j-qty">จำนวนชิ้นงาน</label>
+              <label for="j-qty">จำนวนชิ้นงาน <span style="color:#C53030">*</span></label>
               <input type="number" id="j-qty" placeholder="0" min="0" oninput="calcTotal()" />
             </div>
             <div class="fg" id="j-weight-wrap" style="display:none;">
-              <label for="j-weight">น้ำหนัก (กิโลกรัม)</label>
+              <label for="j-weight">น้ำหนัก (กิโลกรัม) <span style="color:#C53030">*</span></label>
               <input type="number" id="j-weight" placeholder="0.00" min="0" step="0.01" oninput="calcTotal()" />
             </div>
             <div class="fg">
-              <label for="j-price">ราคาต่อหน่วย (บาท)</label>
+              <label for="j-price">ราคาต่อหน่วย (บาท) <span style="color:#C53030">*</span></label>
               <input type="number" id="j-price" placeholder="0.00" min="0" step="0.01" oninput="calcTotal()" />
             </div>
             <div class="fg">
@@ -510,10 +546,67 @@
   </div>
 </div>
 
+</div><!-- end main-app -->
+
 <div id="toast"></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzlLCw2DerRyOgpUtmklrjG_XbIVd15qgi4kolwNRhupeFwX0UopRv5967igrHXghuP/exec';
+let currentUserEmail = '';
+
+// ── Permission ──
+function submitPermissionCheck() {
+  const email = document.getElementById('perm-email-input').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    document.getElementById('perm-msg').textContent = 'กรุณากรอกอีเมล์ให้ถูกต้อง';
+    return;
+  }
+  document.getElementById('perm-msg').textContent = 'กำลังตรวจสอบ...';
+  document.getElementById('perm-email-wrap').style.display = 'none';
+  jsonpGet(API + '?action=checkPermission&email=' + encodeURIComponent(email))
+    .then(function(result) {
+      if (result.allowed) {
+        currentUserEmail = email;
+        document.getElementById('permission-gate').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        updateUserBadge(email);
+        loadCustomers();
+      } else {
+        document.getElementById('perm-denied-msg').textContent =
+          'อีเมล์ ' + email + ' ไม่ได้รับอนุญาตให้ใช้งานระบบนี้ กรุณาติดต่อผู้ดูแลระบบ';
+        document.getElementById('perm-denied').style.display = 'block';
+        document.getElementById('perm-msg').textContent = '';
+      }
+    })
+    .catch(function() {
+      document.getElementById('perm-msg').textContent = 'ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่';
+      document.getElementById('perm-email-wrap').style.display = 'flex';
+    });
+}
+
+function retryPermission() {
+  document.getElementById('perm-email-input').value = '';
+  document.getElementById('perm-denied').style.display = 'none';
+  document.getElementById('perm-msg').textContent = 'กรอกอีเมล์เพื่อเข้าสู่ระบบ';
+  document.getElementById('perm-email-wrap').style.display = 'flex';
+}
+
+function updateUserBadge(email) {
+  const footer = document.querySelector('.sidebar-footer');
+  if (footer) footer.textContent = 'v1.0 · ' + email;
+}
+
+// เริ่มต้น — แสดง permission gate
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('permission-gate').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('perm-email-wrap').style.display = 'flex';
+  document.getElementById('perm-msg').textContent = 'กรอกอีเมล์ Google เพื่อเข้าสู่ระบบ';
+  // Enter key
+  document.getElementById('perm-email-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitPermissionCheck();
+  });
+});
 let allCustomers = [];
 let cbCounter = 0;
 
@@ -543,27 +636,23 @@ function refreshCurrent() {
 
 // ── JSONP helper (แก้ปัญหา CORS) ──
 function jsonpGet(url) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function(resolve, reject) {
     const cbName = '_cb' + (++cbCounter);
     const script = document.createElement('script');
-    const timer  = setTimeout(() => {
-      cleanup();
-      reject(new Error('timeout'));
-    }, 10000);
-
-    window[cbName] = function(data) {
-      cleanup();
-      resolve(data);
-    };
-
+    const timer  = setTimeout(function() { cleanup(); reject(new Error('timeout')); }, 10000);
+    window[cbName] = function(data) { cleanup(); resolve(data); };
     function cleanup() {
       clearTimeout(timer);
       delete window[cbName];
       if (script.parentNode) script.parentNode.removeChild(script);
     }
-
-    script.onerror = () => { cleanup(); reject(new Error('script error')); };
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    script.onerror = function() { cleanup(); reject(new Error('script error')); };
+    // แนบ email ไปกับทุก request (ยกเว้น checkPermission)
+    let finalUrl = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    if (currentUserEmail && !url.includes('action=checkPermission')) {
+      finalUrl += '&email=' + encodeURIComponent(currentUserEmail);
+    }
+    script.src = finalUrl;
     document.head.appendChild(script);
   });
 }
@@ -1060,12 +1149,23 @@ async function saveJob() {
   const qty      = document.getElementById('j-qty').value;
 
   let hasError = false;
+  const qtyModeCheck  = document.querySelector('input[name="qty-mode"]:checked').value;
+  const qtyCheck      = parseFloat(document.getElementById('j-qty').value) || 0;
+  const weightCheck   = parseFloat(document.getElementById('j-weight').value) || 0;
+  const priceCheck    = parseFloat(document.getElementById('j-price').value) || 0;
+  const amountCheck   = qtyModeCheck === 'piece' ? qtyCheck : weightCheck;
+
   if (!dateIn)   { document.getElementById('j-datein').classList.add('field-error');   hasError=true; }
   if (!dateWant) { document.getElementById('j-datewant').classList.add('field-error'); hasError=true; }
   if (!custName) { document.getElementById('j-custname').classList.add('field-error'); hasError=true; }
   if (!desc)     { document.getElementById('j-desc').classList.add('field-error');     hasError=true; }
   if (!platType) { document.getElementById('j-plattype').classList.add('field-error'); hasError=true; }
   if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
+  if (!amountCheck) {
+    document.getElementById(qtyModeCheck === 'piece' ? 'j-qty' : 'j-weight').classList.add('field-error');
+    hasError=true;
+  }
+  if (!priceCheck) { document.getElementById('j-price').classList.add('field-error'); hasError=true; }
   if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
 
   const qtyMode   = document.querySelector('input[name="qty-mode"]:checked').value;
