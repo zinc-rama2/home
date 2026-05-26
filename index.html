@@ -403,17 +403,21 @@
           </div>
 
           <div class="sec-label">ข้อมูลลูกค้า</div>
-          <div class="form-grid cols-2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
             <div class="fg">
               <label for="j-custcode">รหัสลูกค้า</label>
-              <div style="position:relative;">
-                <input type="text" id="j-custcode" placeholder="พิมพ์เพื่อค้นหาลูกค้า" oninput="searchJobCustomer()" autocomplete="off" />
-                <div id="j-cust-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--r);z-index:50;max-height:180px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
-              </div>
+              <input type="text" id="j-custcode" placeholder="กรอกอัตโนมัติ" readonly
+                style="opacity:.65;cursor:not-allowed;background:var(--bg);" />
             </div>
-            <div class="fg">
+            <div class="fg" style="position:relative;">
               <label for="j-custname">ชื่อสถานประกอบการ <span style="color:#C53030">*</span></label>
-              <input type="text" id="j-custname" class="req-field" placeholder="ชื่อบริษัท / ร้านค้า" />
+              <input type="text" id="j-custname" class="req-field" placeholder="พิมพ์เพื่อค้นหา..." oninput="searchJobByName()" autocomplete="off" />
+              <div id="j-name-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--r);z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);"></div>
+            </div>
+            <div class="fg" style="position:relative;">
+              <label for="j-contact">ชื่อผู้ประสานงาน</label>
+              <input type="text" id="j-contact" placeholder="พิมพ์เพื่อค้นหา..." oninput="searchJobByContact()" autocomplete="off" />
+              <div id="j-contact-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--r);z-index:50;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);"></div>
             </div>
           </div>
 
@@ -449,18 +453,34 @@
           </div>
 
           <div class="sec-label">ปริมาณและราคา</div>
+          <!-- เลือกแบบ: ชิ้น หรือ น้ำหนัก -->
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text);">
+              <input type="radio" name="qty-mode" value="piece" checked onchange="toggleQtyMode('piece')" style="width:auto;" />
+              คิดตามจำนวนชิ้น
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text);">
+              <input type="radio" name="qty-mode" value="weight" onchange="toggleQtyMode('weight')" style="width:auto;" />
+              คิดตามน้ำหนัก (กิโลกรัม)
+            </label>
+          </div>
           <div class="form-grid">
-            <div class="fg">
+            <div class="fg" id="j-qty-wrap">
               <label for="j-qty">จำนวนชิ้นงาน</label>
-              <input type="number" id="j-qty" placeholder="0" min="0" />
+              <input type="number" id="j-qty" placeholder="0" min="0" oninput="calcTotal()" />
             </div>
-            <div class="fg">
+            <div class="fg" id="j-weight-wrap" style="display:none;">
               <label for="j-weight">น้ำหนัก (กิโลกรัม)</label>
-              <input type="number" id="j-weight" placeholder="0.00" min="0" step="0.01" />
+              <input type="number" id="j-weight" placeholder="0.00" min="0" step="0.01" oninput="calcTotal()" />
             </div>
             <div class="fg">
               <label for="j-price">ราคาต่อหน่วย (บาท)</label>
-              <input type="number" id="j-price" placeholder="0.00" min="0" step="0.01" />
+              <input type="number" id="j-price" placeholder="0.00" min="0" step="0.01" oninput="calcTotal()" />
+            </div>
+            <div class="fg">
+              <label>ราคาสุทธิ (บาท)</label>
+              <input type="text" id="j-total" readonly placeholder="คำนวณอัตโนมัติ"
+                style="background:var(--bg);font-weight:600;color:var(--brand);cursor:not-allowed;" />
             </div>
           </div>
 
@@ -934,29 +954,91 @@ async function quickUpdateStatus(rowIndex, newStatus) {
   }
 }
 
-function searchJobCustomer() {
-  const q = document.getElementById('j-custcode').value.trim().toLowerCase();
-  const dd = document.getElementById('j-cust-dropdown');
+// ── ค้นหาลูกค้าจากชื่อสถานประกอบการ ──
+function searchJobByName() {
+  var q  = (document.getElementById('j-custname').value || '').trim().toLowerCase();
+  var dd = document.getElementById('j-name-dropdown');
   if (!q) { dd.style.display='none'; return; }
-  const filtered = allCustomers.filter(c =>
-    (c.code||'').toLowerCase().includes(q) ||
-    (c.name||'').toLowerCase().includes(q)
-  ).slice(0,8);
+  var filtered = allCustomers.filter(function(c) {
+    return (c.name||'').toLowerCase().includes(q);
+  }).slice(0,8);
   if (!filtered.length) { dd.style.display='none'; return; }
   dd.style.display = 'block';
-  dd.innerHTML = filtered.map(c => `
-    <div onclick="selectJobCustomer('${c.code}','${c.name.replace(/'/g,"\'")}')"
-      style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"
-      onmouseover="this.style.background='var(--brand-light)'" onmouseout="this.style.background=''">
-      <span style="font-weight:600;color:var(--brand);">${c.code}</span>
-      <span style="color:var(--text-2);margin-left:8px;">${c.name}</span>
-    </div>`).join('');
+  dd.innerHTML = filtered.map(function(c) {
+    return '<div onclick="selectJobByName(\''+c.code+'\',\''+c.name.replace(/'/g,"&#39;")+'\',' +
+           '\''+( c.contact||'').replace(/'/g,"&#39;")+'\' )"' +
+           ' style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"' +
+           ' onmouseover="this.style.background='var(--brand-light)'"' +
+           ' onmouseout="this.style.background=''">' +
+           '<div style="font-weight:600;color:var(--text);">' + c.name + '</div>' +
+           '<div style="font-size:11px;color:var(--text-3);">รหัส: ' + (c.code||'—') + ' · ผู้ประสานงาน: ' + (c.contact||'—') + '</div>' +
+           '</div>';
+  }).join('');
 }
 
-function selectJobCustomer(code, name) {
+function selectJobByName(code, name, contact) {
   document.getElementById('j-custcode').value  = code;
   document.getElementById('j-custname').value  = name;
-  document.getElementById('j-cust-dropdown').style.display = 'none';
+  document.getElementById('j-contact').value   = contact||'';
+  document.getElementById('j-name-dropdown').style.display = 'none';
+}
+
+// ── ค้นหาลูกค้าจากชื่อผู้ประสานงาน ──
+function searchJobByContact() {
+  var q  = (document.getElementById('j-contact').value || '').trim().toLowerCase();
+  var dd = document.getElementById('j-contact-dropdown');
+  if (!q) { dd.style.display='none'; return; }
+  var filtered = allCustomers.filter(function(c) {
+    return (c.contact||'').toLowerCase().includes(q);
+  }).slice(0,8);
+  if (!filtered.length) { dd.style.display='none'; return; }
+  dd.style.display = 'block';
+  dd.innerHTML = filtered.map(function(c) {
+    return '<div onclick="selectJobByContact(\''+c.code+'\',\''+c.name.replace(/'/g,"&#39;")+'\',' +
+           '\''+( c.contact||'').replace(/'/g,"&#39;")+'\' )"' +
+           ' style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"' +
+           ' onmouseover="this.style.background='var(--brand-light)'"' +
+           ' onmouseout="this.style.background=''">' +
+           '<div style="font-weight:600;color:var(--text);">' + (c.contact||'—') + '</div>' +
+           '<div style="font-size:11px;color:var(--text-3);">' + c.name + ' · รหัส: ' + (c.code||'—') + '</div>' +
+           '</div>';
+  }).join('');
+}
+
+function selectJobByContact(code, name, contact) {
+  document.getElementById('j-custcode').value  = code;
+  document.getElementById('j-custname').value  = name;
+  document.getElementById('j-contact').value   = contact||'';
+  document.getElementById('j-contact-dropdown').style.display = 'none';
+}
+
+// ── toggle ชิ้น / น้ำหนัก ──
+function toggleQtyMode(mode) {
+  var qtyWrap    = document.getElementById('j-qty-wrap');
+  var weightWrap = document.getElementById('j-weight-wrap');
+  if (mode === 'piece') {
+    qtyWrap.style.display    = 'flex';
+    weightWrap.style.display = 'none';
+    document.getElementById('j-weight').value = '';
+  } else {
+    qtyWrap.style.display    = 'none';
+    weightWrap.style.display = 'flex';
+    document.getElementById('j-qty').value = '';
+  }
+  calcTotal();
+}
+
+// ── คำนวณราคาสุทธิ ──
+function calcTotal() {
+  var mode  = document.querySelector('input[name="qty-mode"]:checked').value;
+  var qty   = parseFloat(mode === 'piece'
+    ? document.getElementById('j-qty').value
+    : document.getElementById('j-weight').value) || 0;
+  var price = parseFloat(document.getElementById('j-price').value) || 0;
+  var total = qty * price;
+  document.getElementById('j-total').value = total > 0
+    ? '฿' + total.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})
+    : '';
 }
 
 function toggleColorNote() {
@@ -984,17 +1066,25 @@ async function saveJob() {
   if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
   if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
 
+  var qtyMode    = document.querySelector('input[name="qty-mode"]:checked').value;
+  var qtyVal     = qtyMode === 'piece' ? parseFloat(document.getElementById('j-qty').value)||0 : 0;
+  var weightVal  = qtyMode === 'weight' ? parseFloat(document.getElementById('j-weight').value)||0 : 0;
+  var priceVal   = parseFloat(document.getElementById('j-price').value)||0;
+  var totalVal   = (qtyMode === 'piece' ? qtyVal : weightVal) * priceVal;
+
   const dataObj = {
     dateIn, dateWant,
     custCode:  document.getElementById('j-custcode').value,
     custName,
+    contact:   document.getElementById('j-contact').value,
     desc,
     platType,
     color,
     colorNote: document.getElementById('j-colornote').value,
-    qty:       parseFloat(qty)||0,
-    weight:    parseFloat(document.getElementById('j-weight').value)||0,
-    price:     parseFloat(document.getElementById('j-price').value)||0,
+    qty:       qtyVal,
+    weight:    weightVal,
+    price:     priceVal,
+    total:     totalVal,
     status:    document.getElementById('j-status').value,
     note:      document.getElementById('j-note').value,
   };
@@ -1017,14 +1107,16 @@ async function saveJob() {
 }
 
 function clearJobForm() {
-  ['j-datein','j-datewant','j-custcode','j-custname','j-desc','j-colornote','j-qty','j-weight','j-price','j-note']
-    .forEach(id => { document.getElementById(id).value=''; });
+  ['j-datein','j-datewant','j-custcode','j-custname','j-contact','j-desc','j-colornote','j-qty','j-weight','j-price','j-total','j-note']
+    .forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('j-plattype').value = '';
-  document.getElementById('j-color').value = '';
-  document.getElementById('j-status').value = 'รอดำเนินการ';
+  document.getElementById('j-color').value    = '';
+  document.getElementById('j-status').value   = 'รอดำเนินการ';
   document.getElementById('j-colornote-wrap').style.display = 'none';
-  document.querySelectorAll('#page-jobs .req-field').forEach(el => el.classList.remove('field-error'));
-  // ตั้งค่า default วันที่รับงาน = วันนี้
+  document.querySelectorAll('#page-jobs .req-field').forEach(function(el){ el.classList.remove('field-error'); });
+  // reset qty mode กลับเป็น ชิ้น
+  var pieceRadio = document.querySelector('input[name="qty-mode"][value="piece"]');
+  if (pieceRadio) { pieceRadio.checked = true; toggleQtyMode('piece'); }
   document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
 }
 
@@ -1063,9 +1155,10 @@ function openJobDetail(rowIndex) {
     + '</div>'
     + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
       + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">ข้อมูลลูกค้า</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
         + modalRow('รหัสลูกค้า', '<span style="color:var(--brand);font-weight:600;">'+(j.custCode||'—')+'</span>')
         + modalRow('ชื่อสถานประกอบการ', j.custName||'—')
+        + modalRow('ชื่อผู้ประสานงาน', j.contact||'—')
       + '</div>'
     + '</div>'
     + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
@@ -1077,7 +1170,7 @@ function openJobDetail(rowIndex) {
         + modalRow('จำนวนชิ้นงาน', qtyStr)
         + modalRow('น้ำหนัก', weightStr)
         + modalRow('ราคาต่อหน่วย', priceStr)
-        + modalRow('ราคารวม', totalPrice)
+        + modalRow('ราคาสุทธิ', j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : totalPrice)
       + '</div>'
     + '</div>'
     + noteHtml
