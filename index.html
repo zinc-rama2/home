@@ -667,6 +667,9 @@ function verifyEmail(email) {
     .then(function(result) {
       if (result.allowed) {
         currentUserEmail = email;
+        // ลบ Google Sign-In SDK ออกหลัง login สำเร็จ เพื่อหยุด Cross-Origin interference
+        const gsiScript = document.querySelector('script[src*="accounts.google.com/gsi"]');
+        if (gsiScript) gsiScript.parentNode.removeChild(gsiScript);
         document.getElementById('permission-gate').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         document.querySelector('.sidebar-footer').textContent = 'v1.0 · ' + email;
@@ -724,6 +727,7 @@ function refreshCurrent() {
 
 // ── CUSTOMERS ─────────────────────────────────────────────
 async function loadCustomers() {
+  if (!currentUserEmail) return;
   setOv('ov-search', true);
   try {
     const data = await apiGet('getCustomers');
@@ -914,6 +918,7 @@ async function saveCustomer() {
 
 // ── JOBS ──────────────────────────────────────────────────
 async function loadJobs() {
+  if (!currentUserEmail) return;
   setOv('ov-jobs-list', true);
   try {
     const data = await apiGet('getJobs');
