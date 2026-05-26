@@ -586,122 +586,8 @@
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzlLCw2DerRyOgpUtmklrjG_XbIVd15qgi4kolwNRhupeFwX0UopRv5967igrHXghuP/exec';
 let currentUserEmail = '';
-
-// ── Permission ──
-function submitPermissionCheck() {
-  const email = document.getElementById('perm-email-input').value.trim().toLowerCase();
-  if (!email || !email.includes('@')) {
-    document.getElementById('perm-msg').textContent = 'กรุณากรอกอีเมล์ให้ถูกต้อง';
-    return;
-  }
-  document.getElementById('perm-msg').textContent = 'กำลังตรวจสอบ...';
-  document.getElementById('perm-email-wrap').style.display = 'none';
-  jsonpGet(API + '?action=checkPermission&email=' + encodeURIComponent(email))
-    .then(function(result) {
-      if (result.allowed) {
-        currentUserEmail = email;
-        document.getElementById('permission-gate').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
-        updateUserBadge(email);
-        loadCustomers();
-      } else {
-        document.getElementById('perm-denied-msg').textContent =
-          'อีเมล์ ' + email + ' ไม่ได้รับอนุญาตให้ใช้งานระบบนี้ กรุณาติดต่อผู้ดูแลระบบ';
-        document.getElementById('perm-denied').style.display = 'block';
-        document.getElementById('perm-msg').textContent = '';
-      }
-    })
-    .catch(function() {
-      document.getElementById('perm-msg').textContent = 'ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่';
-      document.getElementById('perm-email-wrap').style.display = 'flex';
-    });
-}
-
-function retryPermission() {
-  document.getElementById('perm-email-input').value = '';
-  document.getElementById('perm-denied').style.display = 'none';
-  document.getElementById('perm-msg').textContent = 'กรอกอีเมล์เพื่อเข้าสู่ระบบ';
-  document.getElementById('perm-email-wrap').style.display = 'flex';
-}
-
-function updateUserBadge(email) {
-  const footer = document.querySelector('.sidebar-footer');
-  if (footer) footer.textContent = 'v1.0 · ' + email;
-}
-
-// ── Google Sign-In callback ──
-function handleGoogleSignIn(response) {
-  // decode JWT payload
-  const base64  = response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  const payload = JSON.parse(atob(base64));
-  const email   = (payload.email || '').toLowerCase();
-  if (email) {
-    document.getElementById('perm-email-input').value = email;
-    document.getElementById('perm-msg').textContent = 'พบอีเมล์: ' + email + ' กำลังตรวจสอบ...';
-    verifyEmail(email);
-  }
-}
-
-function verifyEmail(email) {
-  document.getElementById('perm-denied').style.display = 'none';
-  document.getElementById('perm-msg').textContent = 'กำลังตรวจสอบสิทธิ์...';
-  jsonpGet(API + '?action=checkPermission&email=' + encodeURIComponent(email))
-    .then(function(result) {
-      if (result.allowed) {
-        currentUserEmail = email;
-        document.getElementById('permission-gate').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
-        updateUserBadge(email);
-        loadCustomers();
-      } else {
-        document.getElementById('perm-denied-msg').textContent =
-          'อีเมล์ ' + email + ' ไม่ได้รับอนุญาต กรุณาติดต่อผู้ดูแลระบบ';
-        document.getElementById('perm-denied').style.display = 'block';
-        document.getElementById('perm-msg').textContent = '';
-      }
-    })
-    .catch(function() {
-      document.getElementById('perm-msg').textContent = 'เชื่อมต่อไม่ได้ กรุณาลองใหม่';
-    });
-}
-
-function submitPermissionCheck() {
-  const email = document.getElementById('perm-email-input').value.trim().toLowerCase();
-  if (!email || !email.includes('@')) {
-    document.getElementById('perm-msg').textContent = 'กรุณากรอกอีเมล์ให้ถูกต้อง';
-    return;
-  }
-  verifyEmail(email);
-}
-
-function retryPermission() {
-  document.getElementById('perm-email-input').value = '';
-  document.getElementById('perm-denied').style.display = 'none';
-  document.getElementById('perm-msg').textContent = 'กรุณาลงชื่อเข้าใช้ด้วย Google';
-}
-
-// โหลด Google Sign-In SDK แบบ dynamic (ไม่รบกวน JSONP)
-function initGoogleSignIn() {
-  const s = document.createElement('script');
-  s.src = 'https://accounts.google.com/gsi/client';
-  s.onload = function() {
-    if (!window.google || !google.accounts) return;
-    google.accounts.id.initialize({
-      client_id: '691293848360-p94ejigpn8vlqlm73mpclia8n7ej5qhj.apps.googleusercontent.com',
-      callback: handleGoogleSignIn,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      use_fedcm_for_prompt: false,
-    });
-    google.accounts.id.renderButton(
-      document.getElementById('g-signin-btn'),
-      { theme: 'outline', size: 'large', text: 'signin_with', locale: 'th' }
-    );
-  };
-  document.head.appendChild(s);
-}
-window.addEventListener('load', initGoogleSignIn);
 let allCustomers = [];
+let allJobs = [];
 let cbCounter = 0;
 
 const PAGE_TITLES = {
@@ -710,48 +596,31 @@ const PAGE_TITLES = {
   invoice:'ออกบิล / ใบแจ้งหนี้', finance:'รายรับ-รายจ่าย'
 };
 
-function goPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.getElementById('topbar-title').textContent = PAGE_TITLES[id] || id;
-  if (el) el.classList.add('active');
-  if (id === 'customers') loadCustomers();
-  if (id === 'jobs') { loadJobs(); clearJobForm(); }
-  if (id === 'dashboard') { document.getElementById('dash-customers').textContent = allCustomers.length || '—'; }
-}
-
-function refreshCurrent() {
-  const active = document.querySelector('.page.active');
-  if (!active) return;
-  const id = active.id.replace('page-', '');
-  if (id === 'customers') loadCustomers();
-}
-
-// ── JSONP helper (แก้ปัญหา CORS) ──
-function jsonpGet(url) {
+// ── API call (JSONP — ทำงานได้กับ Apps Script) ───────────
+function apiGet(action, extraParams) {
   return new Promise(function(resolve, reject) {
     const cbName = '_cb' + (++cbCounter);
-    const script = document.createElement('script');
-    const timer  = setTimeout(function() { cleanup(); reject(new Error('timeout')); }, 10000);
+    const timer  = setTimeout(function() { cleanup(); reject(new Error('timeout')); }, 15000);
     window[cbName] = function(data) { cleanup(); resolve(data); };
     function cleanup() {
       clearTimeout(timer);
       delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
+      const s = document.getElementById('jsonp_'+cbName);
+      if (s) s.parentNode.removeChild(s);
     }
-    script.onerror = function() { cleanup(); reject(new Error('script error')); };
-    // แนบ email ไปกับทุก request (ยกเว้น checkPermission)
-    let finalUrl = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
-    if (currentUserEmail && !url.includes('action=checkPermission')) {
-      finalUrl += '&email=' + encodeURIComponent(currentUserEmail);
-    }
-    script.src = finalUrl;
+    let url = API + '?action=' + action + '&callback=' + cbName;
+    if (currentUserEmail) url += '&email=' + encodeURIComponent(currentUserEmail);
+    if (extraParams) url += '&' + extraParams;
+    const script = document.createElement('script');
+    script.id = 'jsonp_' + cbName;
+    script.onerror = function() { cleanup(); reject(new Error('network error')); };
+    script.src = url;
     document.head.appendChild(script);
   });
 }
 
-function toast(msg, err = false) {
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg, err) {
   const t = document.getElementById('toast');
   const icon = err
     ? '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
@@ -759,7 +628,7 @@ function toast(msg, err = false) {
   t.innerHTML = icon + msg;
   t.className = 'toast show ' + (err ? 'toast-err' : 'toast-ok');
   clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 3500);
+  t._t = setTimeout(function(){ t.classList.remove('show'); }, 3500);
 }
 
 function setOv(id, on) {
@@ -775,21 +644,101 @@ function setSyncChip(ok) {
     : '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>เชื่อมต่อไม่ได้';
 }
 
+// ── PERMISSION ────────────────────────────────────────────
+function handleGoogleSignIn(response) {
+  try {
+    const b64     = response.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const payload = JSON.parse(atob(b64));
+    const email   = (payload.email||'').toLowerCase();
+    if (email) {
+      document.getElementById('perm-email-input').value = email;
+      document.getElementById('perm-msg').textContent   = 'พบอีเมล์: ' + email;
+      verifyEmail(email);
+    }
+  } catch(e) {
+    document.getElementById('perm-msg').textContent = 'Sign-in error กรุณากรอกอีเมล์เอง';
+  }
+}
+
+function verifyEmail(email) {
+  document.getElementById('perm-denied').style.display = 'none';
+  document.getElementById('perm-msg').textContent = 'กำลังตรวจสอบสิทธิ์...';
+  apiGet('checkPermission', 'email=' + encodeURIComponent(email))
+    .then(function(result) {
+      if (result.allowed) {
+        currentUserEmail = email;
+        document.getElementById('permission-gate').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.querySelector('.sidebar-footer').textContent = 'v1.0 · ' + email;
+        loadCustomers();
+      } else {
+        document.getElementById('perm-denied-msg').textContent =
+          'อีเมล์ ' + email + ' ไม่ได้รับอนุญาต กรุณาติดต่อผู้ดูแลระบบ';
+        document.getElementById('perm-denied').style.display = 'block';
+        document.getElementById('perm-msg').textContent = '';
+      }
+    })
+    .catch(function() {
+      document.getElementById('perm-msg').textContent = 'เชื่อมต่อไม่ได้ กรุณาลองใหม่';
+      document.getElementById('perm-email-wrap').style.display = 'flex';
+    });
+}
+
+function submitPermissionCheck() {
+  const email = document.getElementById('perm-email-input').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    document.getElementById('perm-msg').textContent = 'กรุณากรอกอีเมล์ให้ถูกต้อง';
+    return;
+  }
+  verifyEmail(email);
+}
+
+function retryPermission() {
+  document.getElementById('perm-email-input').value    = '';
+  document.getElementById('perm-denied').style.display = 'none';
+  document.getElementById('perm-msg').textContent = 'กรุณาลงชื่อเข้าใช้ด้วย Google';
+}
+
+// ── NAV ───────────────────────────────────────────────────
+function goPage(id, el) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('topbar-title').textContent = PAGE_TITLES[id] || id;
+  if (el) el.classList.add('active');
+  if (id === 'customers') loadCustomers();
+  if (id === 'jobs') { loadJobs(); clearJobForm(); }
+  if (id === 'dashboard') {
+    const el2 = document.getElementById('dash-customers');
+    if (el2) el2.textContent = allCustomers.length || '—';
+  }
+}
+
+function refreshCurrent() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const id = active.id.replace('page-','');
+  if (id === 'customers') loadCustomers();
+  if (id === 'jobs') loadJobs();
+}
+
+// ── CUSTOMERS ─────────────────────────────────────────────
 async function loadCustomers() {
   setOv('ov-search', true);
   try {
-    const data = await jsonpGet(API + '?action=getCustomers');
+    const data = await apiGet('getCustomers');
     if (data.status === 'ok') {
       allCustomers = data.rows || [];
       setSyncChip(true);
-      document.getElementById('customer-count').textContent = 'ลูกค้าทั้งหมด ' + allCustomers.length + ' ราย';
+      const el = document.getElementById('customer-count');
+      if (el) el.textContent = 'ลูกค้าทั้งหมด ' + allCustomers.length + ' ราย';
     } else {
       setSyncChip(false);
-      toast('โหลดข้อมูลไม่สำเร็จ: ' + (data.message || ''), true);
+      toast('โหลดข้อมูลลูกค้าไม่สำเร็จ: ' + (data.message||''), true);
     }
-  } catch (e) {
+  } catch(e) {
     setSyncChip(false);
-    toast('ไม่สามารถเชื่อมต่อ Apps Script ได้', true);
+    toast('ไม่สามารถเชื่อมต่อได้', true);
   }
   setOv('ov-search', false);
 }
@@ -797,100 +746,100 @@ async function loadCustomers() {
 function searchCustomers() {
   const q = document.getElementById('search-input').value.trim().toLowerCase();
   if (!q) { toast('กรุณาพิมพ์คำค้นหา', true); return; }
-  const filtered = allCustomers.filter(c =>
-    String(c.code    || '').toLowerCase().includes(q) ||
-    String(c.name    || '').toLowerCase().includes(q) ||
-    String(c.contact || '').toLowerCase().includes(q) ||
-    String(c.tel     || '').toLowerCase().includes(q) ||
-    String(c.biztel  || '').toLowerCase().includes(q)
-  );
+  const filtered = allCustomers.filter(function(c) {
+    return String(c.code||'').toLowerCase().includes(q) ||
+           String(c.name||'').toLowerCase().includes(q) ||
+           String(c.contact||'').toLowerCase().includes(q) ||
+           String(c.tel||'').toLowerCase().includes(q) ||
+           String(c.biztel||'').toLowerCase().includes(q);
+  });
   document.getElementById('results-wrap').style.display = 'block';
-  renderTable(filtered);
+  renderCustomerTable(filtered);
 }
 
 function clearSearch() {
   document.getElementById('search-input').value = '';
   document.getElementById('results-wrap').style.display = 'none';
+  const dp = document.getElementById('customer-detail');
+  if (dp) dp.style.display = 'none';
 }
 
 function pillClass(p) {
-  if (p === 'เครดิต') return 'pill-credit';
+  if (p === 'เครดิต')      return 'pill-credit';
   if (p === 'เงินสด / โอน') return 'pill-cash';
   return 'pill-transfer';
 }
 
-function renderTable(rows) {
+function renderCustomerTable(rows) {
   const el = document.getElementById('results-body');
   if (!rows.length) {
-    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/></svg>ไม่พบข้อมูลที่ค้นหา</div>';
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/></svg>ไม่พบข้อมูลที่ค้นหา</div>';
     return;
   }
-  el.innerHTML = `<table>
-    <thead><tr>
-      <th style="width:100px">รหัสลูกค้า</th>
-      <th style="width:160px">ชื่อสถานประกอบการ</th>
-      <th style="width:120px">ผู้ประสานงาน</th>
-      <th style="width:110px">เบอร์</th>
-      <th style="width:85px">ประเภทชำระ</th>
-      <th style="width:80px">เครดิต</th>
-      <th style="width:90px">เริ่มบิล</th>
-      <th style="width:80px">วางบิลวันที่</th>
-      <th style="width:60px">แก้ไข</th>
-    </tr></thead>
-    <tbody>${rows.map(c => `<tr onclick='showCustomerDetail(${JSON.stringify(c).replace(/'/g, "&#39;")})' style='cursor:pointer;'>
-      <td>${c.code||''}</td><td>${c.name||''}</td>
-      <td>${c.contact||'—'}</td><td>${c.tel||c.biztel||'—'}</td>
-      <td><span class="pill ${pillClass(c.paytype)}">${c.paytype||'—'}</span></td>
-      <td>${c.creditdays ? c.creditdays+' วัน' : '—'}</td>
-      <td>${c.billstart||'—'}</td>
-      <td>${c.billdate ? 'วันที่ '+c.billdate : '—'}</td>
-      <td><button class="btn btn-sm" onclick='fillForm(${JSON.stringify(c)})' title="โหลดข้อมูล">
-        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button></td>
-    </tr>`).join('')}</tbody></table>`;
+  el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:100px">รหัสลูกค้า</th>'
+    + '<th style="width:160px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:120px">ผู้ประสานงาน</th>'
+    + '<th style="width:110px">เบอร์</th>'
+    + '<th style="width:85px">ประเภทชำระ</th>'
+    + '<th style="width:80px">เครดิต</th>'
+    + '<th style="width:90px">เริ่มบิล</th>'
+    + '<th style="width:80px">วางบิลวันที่</th>'
+    + '<th style="width:60px">แก้ไข</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(function(c) {
+        return '<tr>'
+          + '<td>' + (c.code||'') + '</td>'
+          + '<td>' + (c.name||'') + '</td>'
+          + '<td>' + (c.contact||'—') + '</td>'
+          + '<td>' + (c.tel||c.biztel||'—') + '</td>'
+          + '<td><span class="pill ' + pillClass(c.paytype) + '">' + (c.paytype||'—') + '</span></td>'
+          + '<td>' + (c.creditdays ? c.creditdays+' วัน' : '—') + '</td>'
+          + '<td>' + (c.billstart||'—') + '</td>'
+          + '<td>' + (c.billdate||'—') + '</td>'
+          + '<td><button class="btn btn-sm" onclick="fillCustomerForm(allCustomers[' + allCustomers.indexOf(c) + '])">'
+          + '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>'
+          + '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+          + '</button></td></tr>';
+      }).join('')
+    + '</tbody></table>';
 }
 
 function showCustomerDetail(c) {
   const panel = document.getElementById('customer-detail');
+  if (!panel) return;
   panel.style.display = 'block';
-  panel.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;color:var(--text);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        ข้อมูลลูกค้า: ${c.name||''}
-      </div>
-      <button class="btn btn-sm" onclick="fillFormAndScroll(allCustomers.find(x=>x.code===\`${c.code}\`))">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        แก้ไข
-      </button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-      ${detailRow('รหัสลูกค้า', c.code)}
-      ${detailRow('ชื่อสถานประกอบการ', c.name)}
-      ${detailRow('เบอร์สถานประกอบการ', c.biztel)}
-      ${detailRow('ชื่อผู้ประสานงาน', c.contact)}
-      ${detailRow('เบอร์ผู้ประสานงาน', c.tel)}
-      ${detailRow('ประเภทชำระ', c.paytype)}
-      ${detailRow('จำนวนวันเครดิต', c.creditdays ? c.creditdays+' วัน' : '—')}
-      ${detailRow('วันที่เริ่มบิล', c.billstart)}
-      ${detailRow('วางบิลวันที่', c.billdate ? 'วันที่ '+c.billdate+' ของทุกเดือน' : '—')}
-      <div style="grid-column:span 3">${detailRow('ที่อยู่', c.addr)}</div>
-    </div>`;
+  panel.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+    + '<div style="font-size:14px;font-weight:600;color:var(--text);">ข้อมูลลูกค้า: ' + (c.name||'') + '</div>'
+    + '<button class="btn btn-sm" onclick="fillCustomerFormByIndex('+allCustomers.indexOf(c)+')">แก้ไข</button>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">'
+    + detailBox('รหัสลูกค้า', c.code)
+    + detailBox('ชื่อสถานประกอบการ', c.name)
+    + detailBox('เบอร์สถานประกอบการ', c.biztel)
+    + detailBox('ชื่อผู้ประสานงาน', c.contact)
+    + detailBox('เบอร์ผู้ประสานงาน', c.tel)
+    + detailBox('ประเภทชำระ', c.paytype)
+    + detailBox('จำนวนวันเครดิต', c.creditdays ? c.creditdays+' วัน' : '—')
+    + detailBox('วันที่เริ่มบิล', c.billstart)
+    + detailBox('วางบิลวันที่', c.billdate ? 'วันที่ '+c.billdate+' ของทุกเดือน' : '—')
+    + '<div style="grid-column:span 3">' + detailBox('ที่อยู่', c.addr) + '</div>'
+    + '</div>';
 }
 
-function detailRow(label, value) {
-  return `<div style="background:var(--bg);border-radius:var(--r);padding:10px 12px;">
-    <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;">${label}</div>
-    <div style="font-size:13px;color:var(--text);word-break:break-word;">${value||'—'}</div>
-  </div>`;
+function detailBox(label, value) {
+  return '<div style="background:var(--bg);border-radius:var(--r);padding:10px 12px;">'
+    + '<div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:3px;">' + label + '</div>'
+    + '<div style="font-size:13px;color:var(--text);">' + (value||'—') + '</div>'
+    + '</div>';
 }
 
-function fillFormAndScroll(c) {
+function fillCustomerFormByIndex(idx) {
+  fillCustomerForm(allCustomers[idx]);
+}
+
+function fillCustomerForm(c) {
   if (!c) return;
-  fillForm(c);
-}
-
-function fillForm(c) {
   document.getElementById('f-code').value       = c.code      || '';
   document.getElementById('f-name').value       = c.name      || '';
   document.getElementById('f-addr').value       = c.addr      || '';
@@ -902,38 +851,27 @@ function fillForm(c) {
   document.getElementById('f-billname').value   = c.billname  || '';
   document.getElementById('f-billstart').value  = c.billstart || '';
   document.getElementById('f-billdate').value   = c.billdate  || '';
-
-  // ตั้ง mode update และเก็บชื่อเดิมสำหรับค้นหาใน sheet
-  document.getElementById('f-mode').value = 'update';
+  document.getElementById('f-mode').value          = 'update';
   document.getElementById('f-original-name').value = c.name || '';
-
-  // เปลี่ยนปุ่มให้รู้ว่ากำลัง update
-  const saveBtn = document.querySelector('#page-customers .btn-primary:last-of-type');
-  if (saveBtn) {
-    saveBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>อัปเดตข้อมูล → Google Sheets';
-  }
-  toast('โหลดข้อมูล: ' + c.name + ' — แก้ไขแล้วกด "อัปเดตข้อมูล"');
-  document.querySelector('#page-customers .card:last-child').scrollIntoView({ behavior: 'smooth' });
+  const btn = document.querySelector('#page-customers .btn-primary:last-of-type');
+  if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>อัปเดตข้อมูล → Google Sheets';
+  toast('โหลดข้อมูล: ' + c.name + ' — แก้ไขแล้วกด อัปเดตข้อมูล');
+  document.querySelector('#page-customers .card:last-child').scrollIntoView({behavior:'smooth'});
 }
 
-function clearForm() {
+function clearCustomerForm() {
   ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays']
-    .forEach(id => { document.getElementById(id).value = ''; });
+    .forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('f-paytype').value = '';
-  document.getElementById('f-mode').value = 'insert';
+  document.getElementById('f-mode').value          = 'insert';
   document.getElementById('f-original-name').value = '';
-  document.querySelectorAll('.req-field').forEach(el => el.classList.remove('field-error'));
-  const saveBtn = document.querySelector('#page-customers .btn-primary:last-of-type');
-  if (saveBtn) {
-    saveBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>บันทึก → Google Sheets';
-  }
+  document.querySelectorAll('.req-field').forEach(function(el){ el.classList.remove('field-error'); });
+  const btn = document.querySelector('#page-customers .btn-primary:last-of-type');
+  if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>บันทึก → Google Sheets';
 }
 
 async function saveCustomer() {
-  // ล้าง error เดิม
-  document.querySelectorAll('.req-field').forEach(el => el.classList.remove('field-error'));
-
-  const code     = document.getElementById('f-code').value.trim();
+  document.querySelectorAll('.req-field').forEach(function(el){ el.classList.remove('field-error'); });
   const name     = document.getElementById('f-name').value.trim();
   const addr     = document.getElementById('f-addr').value.trim();
   const biztel   = document.getElementById('f-biztel').value.trim();
@@ -941,131 +879,91 @@ async function saveCustomer() {
   const tel      = document.getElementById('f-tel').value.trim();
   const billstart= document.getElementById('f-billstart').value.trim();
   const paytype  = document.getElementById('f-paytype').value;
-
-  // ตรวจสอบแต่ละ field บังคับ
   let hasError = false;
-  if (!name)      { document.getElementById('f-name').classList.add('field-error');      hasError = true; }
-  if (!addr)      { document.getElementById('f-addr').classList.add('field-error');      hasError = true; }
-  if (!biztel)    { document.getElementById('f-biztel').classList.add('field-error');    hasError = true; }
-  if (!contact)   { document.getElementById('f-contact').classList.add('field-error');   hasError = true; }
-  if (!tel)       { document.getElementById('f-tel').classList.add('field-error');       hasError = true; }
-  if (!billstart) { document.getElementById('f-billstart').classList.add('field-error'); hasError = true; }
-  if (!paytype)   { document.getElementById('f-paytype').classList.add('field-error');   hasError = true; }
-  if (hasError)   { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
-
+  if (!name)      { document.getElementById('f-name').classList.add('field-error');      hasError=true; }
+  if (!addr)      { document.getElementById('f-addr').classList.add('field-error');      hasError=true; }
+  if (!biztel)    { document.getElementById('f-biztel').classList.add('field-error');    hasError=true; }
+  if (!contact)   { document.getElementById('f-contact').classList.add('field-error');   hasError=true; }
+  if (!tel)       { document.getElementById('f-tel').classList.add('field-error');       hasError=true; }
+  if (!billstart) { document.getElementById('f-billstart').classList.add('field-error'); hasError=true; }
+  if (!paytype)   { document.getElementById('f-paytype').classList.add('field-error');   hasError=true; }
+  if (hasError) { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
   const dataObj = {
-    code, name,
-    addr:       document.getElementById('f-addr').value,
-    biztel:     document.getElementById('f-biztel').value,
-    contact:    document.getElementById('f-contact').value,
-    tel:        document.getElementById('f-tel').value,
-    billstart:  document.getElementById('f-billstart').value,
-    billdate:   document.getElementById('f-billdate').value, // วันที่ของเดือน เช่น 5
-    billname:   document.getElementById('f-billname').value,
-    paytype,
+    code: document.getElementById('f-code').value.trim(), name, addr, biztel, contact, tel,
+    billstart, billdate: document.getElementById('f-billdate').value,
+    billname: document.getElementById('f-billname').value, paytype,
     creditdays: document.getElementById('f-creditdays').value,
-    mode:       document.getElementById('f-mode').value,
+    mode: document.getElementById('f-mode').value,
     searchName: document.getElementById('f-original-name').value || name,
   };
-
   setOv('ov-form', true);
   try {
-    const encoded = encodeURIComponent(JSON.stringify(dataObj));
-    const result  = await jsonpGet(API + '?action=saveCustomer&data=' + encoded);
+    const result = await apiGet('saveCustomer', 'data=' + encodeURIComponent(JSON.stringify(dataObj)));
     if (result.status === 'ok') {
-      const action = result.action === 'updated' ? 'อัปเดต' : 'เพิ่ม';
-      toast(action + 'ข้อมูลสำเร็จ: ' + name);
-      clearForm();
+      toast((result.action==='updated'?'อัปเดต':'เพิ่ม') + 'ข้อมูลสำเร็จ: ' + name);
+      clearCustomerForm();
       loadCustomers();
     } else if (result.status === 'duplicate') {
       toast(result.message, true);
     } else {
-      toast('บันทึกไม่สำเร็จ: ' + (result.message || ''), true);
+      toast('บันทึกไม่สำเร็จ: ' + (result.message||''), true);
     }
-  } catch (e) {
-    toast('เกิดข้อผิดพลาดในการบันทึก', true);
-  }
+  } catch(e) { toast('เกิดข้อผิดพลาดในการบันทึก', true); }
   setOv('ov-form', false);
 }
 
-
-// ═══════════════════════════════════════
-// JOBS — รับงาน / ชุบ
-// ═══════════════════════════════════════
-let allJobs = [];
-
+// ── JOBS ──────────────────────────────────────────────────
 async function loadJobs() {
   setOv('ov-jobs-list', true);
   try {
-    const data = await jsonpGet(API + '?action=getJobs');
+    const data = await apiGet('getJobs');
     if (data.status === 'ok') {
       allJobs = data.rows || [];
-      document.getElementById('jobs-count').textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
+      const el = document.getElementById('jobs-count');
+      if (el) el.textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
       renderJobsTable(allJobs);
     } else {
-      toast('โหลดข้อมูลงานไม่สำเร็จ: ' + (data.message||''), true);
+      toast('โหลดข้อมูลงานไม่สำเร็จ', true);
     }
-  } catch(e) {
-    toast('ไม่สามารถโหลดข้อมูลงานได้', true);
-  }
+  } catch(e) { toast('ไม่สามารถโหลดข้อมูลงานได้', true); }
   setOv('ov-jobs-list', false);
 }
 
 function filterJobs() {
-  const q            = (document.getElementById('job-search').value      || '').trim().toLowerCase();
-  const custcode     = (document.getElementById('filter-custcode').value  || '').trim().toLowerCase();
-  const custname     = (document.getElementById('filter-custname').value  || '').trim().toLowerCase();
+  const q            = (document.getElementById('job-search').value      ||'').trim().toLowerCase();
+  const custcode     = (document.getElementById('filter-custcode').value  ||'').trim().toLowerCase();
+  const custname     = (document.getElementById('filter-custname').value  ||'').trim().toLowerCase();
   const status       = document.getElementById('filter-status').value;
   const plattype     = document.getElementById('filter-plattype').value;
   const dateFrom     = document.getElementById('filter-date-from').value;
   const dateTo       = document.getElementById('filter-date-to').value;
   const dateWantFrom = document.getElementById('filter-datewant-from').value;
   const dateWantTo   = document.getElementById('filter-datewant-to').value;
-
-  const filtered = allJobs.filter(j => {
-    // ค้นหา Job ID / ชิ้นงาน / ประเภทชุบ
-    if (q) {
-      const match =
-        String(j.jobId    ||'').toLowerCase().includes(q) ||
-        String(j.desc     ||'').toLowerCase().includes(q) ||
-        String(j.platType ||'').toLowerCase().includes(q);
-      if (!match) return false;
-    }
-    // ค้นหารหัสลูกค้า
+  const filtered = allJobs.filter(function(j) {
+    if (q && !(String(j.jobId||'').toLowerCase().includes(q)||String(j.desc||'').toLowerCase().includes(q)||String(j.platType||'').toLowerCase().includes(q))) return false;
     if (custcode && !String(j.custCode||'').toLowerCase().includes(custcode)) return false;
-    // ค้นหาชื่อสถานประกอบการ
     if (custname && !String(j.custName||'').toLowerCase().includes(custname)) return false;
-    // filter สถานะ
     if (status   && j.status   !== status)   return false;
-    // filter ประเภทชุบ
     if (plattype && j.platType !== plattype) return false;
-    // filter วันที่รับงาน
     if (dateFrom && j.dateIn   && j.dateIn   < dateFrom) return false;
     if (dateTo   && j.dateIn   && j.dateIn   > dateTo)   return false;
-    // filter วันที่ต้องการรับสินค้า
     if (dateWantFrom && j.dateWant && j.dateWant < dateWantFrom) return false;
     if (dateWantTo   && j.dateWant && j.dateWant > dateWantTo)   return false;
     return true;
   });
-
-  const total = filtered.length;
-  document.getElementById('jobs-count').textContent =
-    'แสดง ' + total + ' / ' + allJobs.length + ' รายการ' +
-    (total < allJobs.length ? ' (กรองแล้ว)' : '');
+  const el = document.getElementById('jobs-count');
+  if (el) el.textContent = 'แสดง ' + filtered.length + ' / ' + allJobs.length + ' รายการ' + (filtered.length < allJobs.length ? ' (กรองแล้ว)' : '');
   renderJobsTable(filtered);
 }
 
 function clearJobFilter() {
-  ['job-search','filter-custcode','filter-custname',
-   'filter-date-from','filter-date-to',
-   'filter-datewant-from','filter-datewant-to'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+  ['job-search','filter-custcode','filter-custname','filter-date-from','filter-date-to','filter-datewant-from','filter-datewant-to']
+    .forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('filter-status').value   = '';
   document.getElementById('filter-plattype').value = '';
-  updateDateLabel('datein');
-  updateDateLabel('datewant');
-  document.getElementById('jobs-count').textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
+  updateDateLabel('datein'); updateDateLabel('datewant');
+  const el = document.getElementById('jobs-count');
+  if (el) el.textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
   renderJobsTable(allJobs);
 }
 
@@ -1073,232 +971,247 @@ const STATUS_COLOR = {
   'รอดำเนินการ': 'background:#FFF3CD;color:#856404;',
   'กำลังชุบ':   'background:#CCE5FF;color:#004085;',
   'เสร็จแล้ว':  'background:#D4EDDA;color:#155724;',
-  'รอรับสินค้า':'background:#F8D7DA;color:#721C24;',
+  'รอรับสินค้า': 'background:#F8D7DA;color:#721C24;',
 };
 
 function renderJobsTable(rows) {
   const el = document.getElementById('jobs-table-body');
   if (!rows.length) {
-    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>ไม่มีรายการที่ตรงกัน</div>';
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ไม่มีรายการ</div>';
     return;
   }
-  el.innerHTML = `<table>
-    <thead><tr>
-      <th style="width:120px">Job ID</th>
-      <th style="width:95px">วันที่รับ</th>
-      <th style="width:110px">วันที่ต้องการรับ</th>
-      <th style="width:95px">รหัสลูกค้า</th>
-      <th style="width:150px">ชื่อสถานประกอบการ</th>
-      <th style="width:170px">ชิ้นงาน</th>
-      <th style="width:110px">ประเภทชุบ</th>
-      <th style="width:90px">สี</th>
-      <th style="width:65px">จำนวน</th>
-      <th style="width:75px">น้ำหนัก</th>
-      <th style="width:150px">สถานะงาน</th>
-    </tr></thead>
-    <tbody>${rows.map(j => `<tr style="cursor:pointer;" onclick="openJobDetail(${j.rowIndex})">
-      <td style="font-weight:600;color:var(--brand);">${j.jobId||''}</td>
-      <td>${j.dateIn||'—'}</td>
-      <td>${j.dateWant||'—'}</td>
-      <td style="color:var(--brand);font-weight:500;">${j.custCode||'—'}</td>
-      <td title="${j.custName||''}">${j.custName||'—'}</td>
-      <td title="${j.desc||''}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;">${j.desc||'—'}</td>
-      <td>${j.platType||'—'}</td>
-      <td title="${j.color||''}" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${j.color||'—'}</td>
-      <td style="text-align:right;">${j.qty||'—'}</td>
-      <td style="text-align:right;">${j.weight ? j.weight+' kg' : '—'}</td>
-      <td onclick="event.stopPropagation()">
-        <select style="font-size:12px;padding:4px 8px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;${STATUS_COLOR[j.status]||''}"
-          onchange="quickUpdateStatus(${j.rowIndex}, this.value)">
-          <option value="รอดำเนินการ" ${j.status==='รอดำเนินการ'?'selected':''}>รอดำเนินการ</option>
-          <option value="กำลังชุบ"    ${j.status==='กำลังชุบ'?'selected':''}>กำลังชุบ</option>
-          <option value="เสร็จแล้ว"   ${j.status==='เสร็จแล้ว'?'selected':''}>เสร็จแล้ว</option>
-          <option value="รอรับสินค้า" ${j.status==='รอรับสินค้า'?'selected':''}>รอรับสินค้า</option>
-        </select>
-      </td>
-    </tr>`).join('')}</tbody></table>`;
+  el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:110px">Job ID</th>'
+    + '<th style="width:90px">วันที่รับ</th>'
+    + '<th style="width:100px">วันที่ต้องการรับ</th>'
+    + '<th style="width:90px">รหัสลูกค้า</th>'
+    + '<th style="width:140px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:160px">ชิ้นงาน</th>'
+    + '<th style="width:100px">ประเภทชุบ</th>'
+    + '<th style="width:80px">สี</th>'
+    + '<th style="width:65px">จำนวน</th>'
+    + '<th style="width:65px">น้ำหนัก</th>'
+    + '<th style="width:145px">สถานะงาน</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(function(j) {
+        const sc = STATUS_COLOR[j.status]||'';
+        const opts = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+          return '<option value="'+s+'"'+(j.status===s?' selected':'')+'>'+s+'</option>';
+        }).join('');
+        return '<tr style="cursor:pointer;" onclick="openJobDetail('+j.rowIndex+')">'
+          + '<td style="font-weight:600;color:var(--brand);">' + (j.jobId||'') + '</td>'
+          + '<td>' + (j.dateIn||'—') + '</td>'
+          + '<td>' + (j.dateWant||'—') + '</td>'
+          + '<td style="color:var(--brand);font-weight:500;">' + (j.custCode||'—') + '</td>'
+          + '<td title="' + (j.custName||'') + '">' + (j.custName||'—') + '</td>'
+          + '<td title="' + (j.desc||'') + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">' + (j.desc||'—') + '</td>'
+          + '<td>' + (j.platType||'—') + '</td>'
+          + '<td title="' + (j.color||'') + '">' + (j.color||'—').substring(0,10) + '</td>'
+          + '<td style="text-align:right;">' + (j.qty||'—') + '</td>'
+          + '<td style="text-align:right;">' + (j.weight ? j.weight+' kg' : '—') + '</td>'
+          + '<td onclick="event.stopPropagation()">'
+          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value)">'+opts+'</select>'
+          + '</td></tr>';
+      }).join('')
+    + '</tbody></table>';
 }
 
 async function quickUpdateStatus(rowIndex, newStatus) {
   try {
-    const data = { rowIndex, status: newStatus };
-    const encoded = encodeURIComponent(JSON.stringify(data));
-    const result = await jsonpGet(API + '?action=updateJobStatus&data=' + encoded);
+    const encoded = encodeURIComponent(JSON.stringify({ rowIndex: rowIndex, status: newStatus }));
+    const result  = await apiGet('updateJobStatus', 'data=' + encoded);
     if (result.status === 'ok') {
-      toast('อัปเดตสถานะเป็น: ' + newStatus);
-      const job = allJobs.find(j => j.rowIndex === rowIndex);
+      toast('อัปเดตสถานะ: ' + newStatus);
+      const job = allJobs.find(function(j){ return j.rowIndex === rowIndex; });
       if (job) job.status = newStatus;
     } else {
-      toast('อัปเดตไม่สำเร็จ', true);
+      toast('อัปเดตไม่สำเร็จ: ' + (result.message||''), true);
       loadJobs();
     }
-  } catch(e) {
-    toast('เกิดข้อผิดพลาด', true);
-  }
+  } catch(e) { toast('เกิดข้อผิดพลาด', true); loadJobs(); }
 }
 
-// ── ค้นหาลูกค้าจากชื่อสถานประกอบการ ──
+// ── JOB DETAIL MODAL ──────────────────────────────────────
+function openJobDetail(rowIndex) {
+  const j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!j) return;
+  document.getElementById('modal-job-title').textContent = 'รายละเอียดงาน: ' + (j.jobId||'');
+  const sc = STATUS_COLOR[j.status]||'';
+  const total = j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—';
+  const statBtns = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+    const active = j.status===s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
+    return '<button class="btn btn-sm job-stat-btn" style="'+active+'" data-row="'+j.rowIndex+'" data-status="'+s+'">'+s+'</button>';
+  }).join('');
+  document.getElementById('modal-job-body').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">'
+    + detailBox('Job ID','<span style="font-weight:700;color:var(--brand);font-size:15px;">'+(j.jobId||'—')+'</span>')
+    + detailBox('สถานะงาน','<span style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;'+sc+'">'+(j.status||'—')+'</span>')
+    + detailBox('วันที่รับงาน',j.dateIn||'—')
+    + detailBox('วันที่ต้องการรับสินค้า',j.dateWant||'—')
+    + '</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">ข้อมูลลูกค้า</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
+    + detailBox('รหัสลูกค้า','<span style="color:var(--brand);font-weight:600;">'+(j.custCode||'—')+'</span>')
+    + detailBox('ชื่อสถานประกอบการ',j.custName||'—')
+    + detailBox('ชื่อผู้ประสานงาน',j.contact||'—')
+    + '</div></div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">รายละเอียดชิ้นงาน</div>'
+    + '<div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.7;">'+(j.desc||'—')+'</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
+    + detailBox('ประเภทการชุบ',j.platType||'—')
+    + detailBox('สีของชิ้นงาน',j.color||'—')
+    + detailBox('จำนวนชิ้นงาน',j.qty ? j.qty+' ชิ้น' : '—')
+    + detailBox('น้ำหนัก',j.weight ? j.weight+' กิโลกรัม' : '—')
+    + detailBox('ราคาต่อหน่วย',j.price ? '฿'+Number(j.price).toLocaleString() : '—')
+    + detailBox('ราคาสุทธิ',total)
+    + '</div></div>'
+    + (j.note ? '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:8px;">หมายเหตุ</div>'
+      + '<div style="background:var(--warn-bg);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--warn);">'+j.note+'</div></div>' : '')
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">เปลี่ยนสถานะงาน</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+statBtns+'</div></div>';
+  document.getElementById('job-modal-overlay').style.display = 'block';
+  document.getElementById('job-modal').style.display        = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeJobDetail() {
+  document.getElementById('job-modal-overlay').style.display = 'none';
+  document.getElementById('job-modal').style.display        = 'none';
+  document.body.style.overflow = '';
+}
+
+// event delegation สำหรับปุ่มเปลี่ยนสถานะใน modal
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.job-stat-btn');
+  if (btn) {
+    const row    = parseInt(btn.dataset.row);
+    const status = btn.dataset.status;
+    quickUpdateStatus(row, status);
+    closeJobDetail();
+  }
+  // fillCustomerFormByIndex
+  if (e.target.closest('.fill-cust-btn')) {
+    const idx = parseInt(e.target.closest('.fill-cust-btn').dataset.idx);
+    fillCustomerForm(allCustomers[idx]);
+  }
+});
+
+// ── JOB FORM ──────────────────────────────────────────────
 function searchJobByName() {
-  const q  = (document.getElementById('j-custname').value || '').trim().toLowerCase();
+  const q  = (document.getElementById('j-custname').value||'').trim().toLowerCase();
   const dd = document.getElementById('j-name-dropdown');
-  if (!q) { dd.style.display = 'none'; return; }
-  const filtered = allCustomers.filter(function(c) {
-    return (c.name||'').toLowerCase().includes(q);
-  }).slice(0, 8);
-  if (!filtered.length) { dd.style.display = 'none'; return; }
+  if (!q) { dd.style.display='none'; return; }
+  const filtered = allCustomers.filter(function(c){ return (c.name||'').toLowerCase().includes(q); }).slice(0,8);
+  if (!filtered.length) { dd.style.display='none'; return; }
   dd.style.display = 'block';
   while (dd.firstChild) dd.removeChild(dd.firstChild);
   filtered.forEach(function(c) {
     const div = document.createElement('div');
     div.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #E2E8F0;';
-    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">' + (c.name||'') + '</div>'
-      + '<div style="font-size:11px;color:#718096;">รหัส: ' + (c.code||'—') + ' · ผู้ประสานงาน: ' + (c.contact||'—') + '</div>';
-    div.addEventListener('mouseenter', function(){ this.style.background = '#E6F1FB'; });
-    div.addEventListener('mouseleave', function(){ this.style.background = ''; });
-    div.addEventListener('click', function() { selectJobByName(c.code||'', c.name||'', c.contact||''); });
+    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">'+(c.name||'')+'</div>'
+      + '<div style="font-size:11px;color:#718096;">รหัส: '+(c.code||'—')+' · ผู้ประสานงาน: '+(c.contact||'—')+'</div>';
+    div.addEventListener('mouseenter',function(){ this.style.background='#E6F1FB'; });
+    div.addEventListener('mouseleave',function(){ this.style.background=''; });
+    div.addEventListener('click',function(){ selectJobByName(c.code||'',c.name||'',c.contact||''); });
     dd.appendChild(div);
   });
 }
 
-function selectJobByName(code, name, contact) {
+function selectJobByName(code,name,contact) {
   document.getElementById('j-custcode').value = code;
   document.getElementById('j-custname').value = name;
-  document.getElementById('j-contact').value  = contact || '';
+  document.getElementById('j-contact').value  = contact||'';
   document.getElementById('j-name-dropdown').style.display = 'none';
 }
 
-// ── ค้นหาลูกค้าจากชื่อผู้ประสานงาน ──
 function searchJobByContact() {
-  const q  = (document.getElementById('j-contact').value || '').trim().toLowerCase();
+  const q  = (document.getElementById('j-contact').value||'').trim().toLowerCase();
   const dd = document.getElementById('j-contact-dropdown');
-  if (!q) { dd.style.display = 'none'; return; }
-  const filtered = allCustomers.filter(function(c) {
-    return (c.contact||'').toLowerCase().includes(q);
-  }).slice(0, 8);
-  if (!filtered.length) { dd.style.display = 'none'; return; }
+  if (!q) { dd.style.display='none'; return; }
+  const filtered = allCustomers.filter(function(c){ return (c.contact||'').toLowerCase().includes(q); }).slice(0,8);
+  if (!filtered.length) { dd.style.display='none'; return; }
   dd.style.display = 'block';
   while (dd.firstChild) dd.removeChild(dd.firstChild);
   filtered.forEach(function(c) {
     const div = document.createElement('div');
     div.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #E2E8F0;';
-    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">' + (c.contact||'—') + '</div>'
-      + '<div style="font-size:11px;color:#718096;">' + (c.name||'') + ' · รหัส: ' + (c.code||'—') + '</div>';
-    div.addEventListener('mouseenter', function(){ this.style.background = '#E6F1FB'; });
-    div.addEventListener('mouseleave', function(){ this.style.background = ''; });
-    div.addEventListener('click', function() { selectJobByContact(c.code||'', c.name||'', c.contact||''); });
+    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">'+(c.contact||'—')+'</div>'
+      + '<div style="font-size:11px;color:#718096;">'+(c.name||'')+' · รหัส: '+(c.code||'—')+'</div>';
+    div.addEventListener('mouseenter',function(){ this.style.background='#E6F1FB'; });
+    div.addEventListener('mouseleave',function(){ this.style.background=''; });
+    div.addEventListener('click',function(){ selectJobByContact(c.code||'',c.name||'',c.contact||''); });
     dd.appendChild(div);
   });
 }
 
-function selectJobByContact(code, name, contact) {
+function selectJobByContact(code,name,contact) {
   document.getElementById('j-custcode').value = code;
   document.getElementById('j-custname').value = name;
-  document.getElementById('j-contact').value  = contact || '';
+  document.getElementById('j-contact').value  = contact||'';
   document.getElementById('j-contact-dropdown').style.display = 'none';
 }
 
-// ── toggle ชิ้น / น้ำหนัก ──
 function toggleQtyMode(mode) {
-  const qtyWrap    = document.getElementById('j-qty-wrap');
-  const weightWrap = document.getElementById('j-weight-wrap');
-  if (mode === 'piece') {
-    qtyWrap.style.display    = 'flex';
-    weightWrap.style.display = 'none';
-    document.getElementById('j-weight').value = '';
-  } else {
-    qtyWrap.style.display    = 'none';
-    weightWrap.style.display = 'flex';
-    document.getElementById('j-qty').value = '';
-  }
+  const qw = document.getElementById('j-qty-wrap');
+  const ww = document.getElementById('j-weight-wrap');
+  if (mode==='piece') { qw.style.display='flex'; ww.style.display='none'; document.getElementById('j-weight').value=''; }
+  else                { qw.style.display='none'; ww.style.display='flex'; document.getElementById('j-qty').value=''; }
   calcTotal();
 }
 
-// ── คำนวณราคาสุทธิ ──
 function calcTotal() {
   const mode  = document.querySelector('input[name="qty-mode"]:checked').value;
-  const qty   = parseFloat(mode === 'piece'
-    ? document.getElementById('j-qty').value
-    : document.getElementById('j-weight').value) || 0;
-  const price = parseFloat(document.getElementById('j-price').value) || 0;
+  const qty   = parseFloat(mode==='piece' ? document.getElementById('j-qty').value : document.getElementById('j-weight').value)||0;
+  const price = parseFloat(document.getElementById('j-price').value)||0;
   const total = qty * price;
-  document.getElementById('j-total').value = total > 0
-    ? '฿' + total.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})
-    : '';
-}
-
-function toggleColorNote() {
-  const val = document.getElementById('j-color').value;
-  const wrap = document.getElementById('j-colornote-wrap');
-  wrap.style.display = val === 'อื่นๆ' ? 'flex' : 'none';
+  document.getElementById('j-total').value = total > 0 ? '฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2}) : '';
 }
 
 async function saveJob() {
-  document.querySelectorAll('#page-jobs .req-field').forEach(el => el.classList.remove('field-error'));
+  document.querySelectorAll('#page-jobs .req-field').forEach(function(el){ el.classList.remove('field-error'); });
   const dateIn   = document.getElementById('j-datein').value;
   const dateWant = document.getElementById('j-datewant').value;
   const custName = document.getElementById('j-custname').value.trim();
   const desc     = document.getElementById('j-desc').value.trim();
   const platType = document.getElementById('j-plattype').value;
   const color    = document.getElementById('j-color').value;
-  const qty      = document.getElementById('j-qty').value;
-
+  const qtyMode  = document.querySelector('input[name="qty-mode"]:checked').value;
+  const qtyVal   = parseFloat(document.getElementById('j-qty').value)||0;
+  const wgtVal   = parseFloat(document.getElementById('j-weight').value)||0;
+  const priceVal = parseFloat(document.getElementById('j-price').value)||0;
+  const amount   = qtyMode==='piece' ? qtyVal : wgtVal;
   let hasError = false;
-  const qtyModeCheck  = document.querySelector('input[name="qty-mode"]:checked').value;
-  const qtyCheck      = parseFloat(document.getElementById('j-qty').value) || 0;
-  const weightCheck   = parseFloat(document.getElementById('j-weight').value) || 0;
-  const priceCheck    = parseFloat(document.getElementById('j-price').value) || 0;
-  const amountCheck   = qtyModeCheck === 'piece' ? qtyCheck : weightCheck;
-
   if (!dateIn)   { document.getElementById('j-datein').classList.add('field-error');   hasError=true; }
   if (!dateWant) { document.getElementById('j-datewant').classList.add('field-error'); hasError=true; }
   if (!custName) { document.getElementById('j-custname').classList.add('field-error'); hasError=true; }
   if (!desc)     { document.getElementById('j-desc').classList.add('field-error');     hasError=true; }
   if (!platType) { document.getElementById('j-plattype').classList.add('field-error'); hasError=true; }
   if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
-  if (!amountCheck) {
-    document.getElementById(qtyModeCheck === 'piece' ? 'j-qty' : 'j-weight').classList.add('field-error');
-    hasError=true;
-  }
-  if (!priceCheck) { document.getElementById('j-price').classList.add('field-error'); hasError=true; }
-  if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
-
-  const qtyMode   = document.querySelector('input[name="qty-mode"]:checked').value;
-  const qtyVal    = qtyMode === 'piece' ? parseFloat(document.getElementById('j-qty').value)||0 : 0;
-  const weightVal = qtyMode === 'weight' ? parseFloat(document.getElementById('j-weight').value)||0 : 0;
-  const priceVal  = parseFloat(document.getElementById('j-price').value)||0;
-  const totalVal  = (qtyMode === 'piece' ? qtyVal : weightVal) * priceVal;
-
+  if (!amount)   { document.getElementById(qtyMode==='piece'?'j-qty':'j-weight').classList.add('field-error'); hasError=true; }
+  if (!priceVal) { document.getElementById('j-price').classList.add('field-error');    hasError=true; }
+  if (hasError) { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน',true); return; }
   const dataObj = {
     dateIn, dateWant,
     custCode:  document.getElementById('j-custcode').value,
     custName,
     contact:   document.getElementById('j-contact').value,
-    desc,
-    platType,
-    color,
+    desc, platType, color,
     colorNote: document.getElementById('j-colornote').value,
-    qty:       qtyVal,
-    weight:    weightVal,
-    price:     priceVal,
-    total:     totalVal,
-    status:    document.getElementById('j-status').value,
-    note:      document.getElementById('j-note').value,
+    qty: qtyMode==='piece'?qtyVal:0, weight: qtyMode==='weight'?wgtVal:0,
+    price: priceVal, total: amount*priceVal,
+    status: document.getElementById('j-status').value,
+    note: document.getElementById('j-note').value,
   };
-
   setOv('ov-job-form', true);
   try {
-    const encoded = encodeURIComponent(JSON.stringify(dataObj));
-    const result  = await jsonpGet(API + '?action=saveJob&data=' + encoded);
-    if (result.status === 'ok') {
-      toast('บันทึกงานสำเร็จ! Job ID: ' + result.jobId);
-      clearJobForm();
-      loadJobs();
-    } else {
-      toast('บันทึกไม่สำเร็จ: ' + (result.message||''), true);
-    }
-  } catch(e) {
-    toast('เกิดข้อผิดพลาดในการบันทึก', true);
-  }
+    const result = await apiGet('saveJob','data='+encodeURIComponent(JSON.stringify(dataObj)));
+    if (result.status==='ok') { toast('บันทึกงานสำเร็จ! Job ID: '+result.jobId); clearJobForm(); loadJobs(); }
+    else toast('บันทึกไม่สำเร็จ: '+(result.message||''),true);
+  } catch(e) { toast('เกิดข้อผิดพลาดในการบันทึก',true); }
   setOv('ov-job-form', false);
 }
 
@@ -1310,147 +1223,87 @@ function clearJobForm() {
   document.getElementById('j-status').value   = 'รอดำเนินการ';
   document.getElementById('j-colornote-wrap').style.display = 'none';
   document.querySelectorAll('#page-jobs .req-field').forEach(function(el){ el.classList.remove('field-error'); });
-  // reset qty mode กลับเป็น ชิ้น
-  const pieceRadio = document.querySelector('input[name="qty-mode"][value="piece"]');
-  if (pieceRadio) { pieceRadio.checked = true; toggleQtyMode('piece'); }
+  const pr = document.querySelector('input[name="qty-mode"][value="piece"]');
+  if (pr) { pr.checked=true; toggleQtyMode('piece'); }
   document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
 }
 
-
-// ── Job Detail Modal ──
-function openJobDetail(rowIndex) {
-  const j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
-  if (!j) return;
-
-  document.getElementById('modal-job-title').textContent = 'รายละเอียดงาน: ' + (j.jobId||'');
-  const statusStyle = STATUS_COLOR[j.status] || '';
-  const totalPrice  = (j.qty && j.price) ? String.fromCharCode(3647) + Number(j.qty * j.price).toLocaleString() : '—';
-  const priceStr    = j.price ? String.fromCharCode(3647) + Number(j.price).toLocaleString() : '—';
-  const qtyStr      = j.qty   ? j.qty + ' ชิ้น' : '—';
-  const weightStr   = j.weight ? j.weight + ' กิโลกรัม' : '—';
-  const noteHtml    = j.note
-    ? '<div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;">หมายเหตุ</div>'
-      + '<div style="background:var(--warn-bg);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--warn);">' + j.note + '</div></div>'
-    : '';
-
-  const statuses = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'];
-  const statusBtns = statuses.map(function(s) {
-    const activeStyle = j.status === s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
-    return '<button class="btn btn-sm" style="' + activeStyle + '"'
-      + ' onclick="quickUpdateStatus(' + j.rowIndex + ',&quot;' + s + '&quot;);closeJobDetail();">'
-      + s + '</button>';
-  }).join('');
-
-  document.getElementById('modal-job-body').innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">'
-      + modalRow('Job ID', '<span style="font-weight:700;color:var(--brand);font-size:15px;">'+(j.jobId||'—')+'</span>')
-      + modalRow('สถานะงาน', '<span style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;'+statusStyle+'">'+(j.status||'—')+'</span>')
-      + modalRow('วันที่รับงาน', j.dateIn||'—')
-      + modalRow('วันที่ต้องการรับสินค้า', j.dateWant||'—')
-    + '</div>'
-    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">ข้อมูลลูกค้า</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
-        + modalRow('รหัสลูกค้า', '<span style="color:var(--brand);font-weight:600;">'+(j.custCode||'—')+'</span>')
-        + modalRow('ชื่อสถานประกอบการ', j.custName||'—')
-        + modalRow('ชื่อผู้ประสานงาน', j.contact||'—')
-      + '</div>'
-    + '</div>'
-    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">รายละเอียดชิ้นงาน</div>'
-      + '<div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.7;">'+(j.desc||'—')+'</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
-        + modalRow('ประเภทการชุบ', j.platType||'—')
-        + modalRow('สีของชิ้นงาน', j.color||'—')
-        + modalRow('จำนวนชิ้นงาน', qtyStr)
-        + modalRow('น้ำหนัก', weightStr)
-        + modalRow('ราคาต่อหน่วย', priceStr)
-        + modalRow('ราคาสุทธิ', j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : totalPrice)
-      + '</div>'
-    + '</div>'
-    + noteHtml
-    + '<div style="border-top:1px solid var(--border);padding-top:16px;">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">เปลี่ยนสถานะงาน</div>'
-      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + statusBtns + '</div>'
-    + '</div>';
-
-  document.getElementById('job-modal-overlay').style.display = 'block';
-  document.getElementById('job-modal').style.display = 'block';
-  document.body.style.overflow = 'hidden';
+function toggleColorNote() {
+  document.getElementById('j-colornote-wrap').style.display =
+    document.getElementById('j-color').value==='อื่นๆ' ? 'flex' : 'none';
 }
 
-function modalRow(label, value) {
-  return '<div style="background:var(--bg);border-radius:var(--r);padding:10px 12px;">'+
-    '<div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;">'+label+'</div>'+
-    '<div style="font-size:13px;color:var(--text);">'+value+'</div>'+
-  '</div>';
-}
-
-function closeJobDetail() {
-  document.getElementById('job-modal-overlay').style.display = 'none';
-  document.getElementById('job-modal').style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-// ── Date Range Picker helpers ──
+// ── DATE RANGE PICKER ─────────────────────────────────────
 function toggleDatePicker(key) {
-  const picker = document.getElementById('dr-' + key + '-picker');
+  const picker = document.getElementById('dr-'+key+'-picker');
   const isOpen = picker.style.display !== 'none';
-  // ปิดทุก picker ก่อน
-  ['datein','datewant'].forEach(k => {
-    document.getElementById('dr-' + k + '-picker').style.display = 'none';
-  });
-  if (!isOpen) picker.style.display = 'block';
+  ['datein','datewant'].forEach(function(k){ document.getElementById('dr-'+k+'-picker').style.display='none'; });
+  if (!isOpen) picker.style.display='block';
 }
 
 function updateDateLabel(key) {
-  const fromId = key === 'datein' ? 'filter-date-from' : 'filter-datewant-from';
-  const toId   = key === 'datein' ? 'filter-date-to'   : 'filter-datewant-to';
-  const from   = document.getElementById(fromId).value;
-  const to     = document.getElementById(toId).value;
-  const label  = document.getElementById('dr-' + key + '-label');
-  if (from && to)   label.textContent = formatDateTH(from) + ' — ' + formatDateTH(to);
-  else if (from)    label.textContent = 'ตั้งแต่ ' + formatDateTH(from);
-  else if (to)      label.textContent = 'ถึง ' + formatDateTH(to);
-  else              label.textContent = 'เลือกช่วงวันที่...';
-  label.style.color = (from || to) ? 'var(--brand)' : 'var(--text-3)';
+  const from  = document.getElementById(key==='datein'?'filter-date-from':'filter-datewant-from').value;
+  const to    = document.getElementById(key==='datein'?'filter-date-to':'filter-datewant-to').value;
+  const label = document.getElementById('dr-'+key+'-label');
+  if (from&&to) label.textContent = fmtDateTH(from)+' — '+fmtDateTH(to);
+  else if (from) label.textContent = 'ตั้งแต่ '+fmtDateTH(from);
+  else if (to)   label.textContent = 'ถึง '+fmtDateTH(to);
+  else           label.textContent = 'เลือกช่วงวันที่...';
+  label.style.color = (from||to) ? 'var(--brand)' : 'var(--text-3)';
 }
 
 function clearDateRange(key) {
-  const fromId = key === 'datein' ? 'filter-date-from' : 'filter-datewant-from';
-  const toId   = key === 'datein' ? 'filter-date-to'   : 'filter-datewant-to';
-  document.getElementById(fromId).value = '';
-  document.getElementById(toId).value   = '';
-  updateDateLabel(key);
-  filterJobs();
+  const fid = key==='datein'?'filter-date-from':'filter-datewant-from';
+  const tid = key==='datein'?'filter-date-to':'filter-datewant-to';
+  document.getElementById(fid).value='';
+  document.getElementById(tid).value='';
+  updateDateLabel(key); filterJobs();
 }
 
-function formatDateTH(dateStr) {
-  if (!dateStr) return '';
-  const [y, m, d] = dateStr.split('-');
+function fmtDateTH(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
   const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  return d + ' ' + months[parseInt(m)] + ' ' + (parseInt(y) + 543);
+  return d+' '+months[parseInt(m)]+' '+(parseInt(y)+543);
 }
 
-// ปิด picker เมื่อคลิกที่อื่น
+// ── CLOSE DROPDOWNS ON CLICK OUTSIDE ─────────────────────
 document.addEventListener('click', function(e) {
   if (!e.target.closest('[id^="dr-"]')) {
-    ['datein','datewant'].forEach(k => {
-      const el = document.getElementById('dr-' + k + '-picker');
-      if (el) el.style.display = 'none';
+    ['datein','datewant'].forEach(function(k){
+      const el = document.getElementById('dr-'+k+'-picker');
+      if (el) el.style.display='none';
     });
   }
-  // ปิด customer dropdown ด้วย
-  const dd = document.getElementById('j-cust-dropdown');
-  if (dd && !e.target.closest('#j-custcode') && !e.target.closest('#j-cust-dropdown')) {
-    dd.style.display = 'none';
-  }
+  ['j-name-dropdown','j-contact-dropdown'].forEach(function(ddId){
+    const dd = document.getElementById(ddId);
+    if (dd && !e.target.closest('#'+ddId) && !e.target.closest('#j-custname') && !e.target.closest('#j-contact')) {
+      dd.style.display='none';
+    }
+  });
 });
 
-loadCustomers();
-
-
+// ── GOOGLE SIGN-IN (dynamic load ไม่รบกวน JSONP) ─────────
+function initGoogleSignIn() {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = function() {
+    if (!window.google||!google.accounts) return;
+    google.accounts.id.initialize({
+      client_id: '691293848360-p94ejigpn8vlqlm73mpclia8n7ej5qhj.apps.googleusercontent.com',
+      callback: handleGoogleSignIn,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      use_fedcm_for_prompt: false,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('g-signin-btn'),
+      { theme:'outline', size:'large', text:'signin_with', locale:'th' }
+    );
+  };
+  document.head.appendChild(s);
+}
+window.addEventListener('load', initGoogleSignIn);
 </script>
 </body>
 </html>
