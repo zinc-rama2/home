@@ -881,30 +881,30 @@ function renderJobsTable(rows) {
   }
   el.innerHTML = `<table>
     <thead><tr>
-      <th style="width:110px">Job ID</th>
-      <th style="width:90px">วันที่รับ</th>
-      <th style="width:100px">วันที่ต้องการรับ</th>
-      <th style="width:90px">รหัสลูกค้า</th>
-      <th style="width:140px">ชื่อสถานประกอบการ</th>
-      <th style="width:160px">ชิ้นงาน</th>
-      <th style="width:100px">ประเภทชุบ</th>
-      <th style="width:70px">สี</th>
+      <th style="width:120px">Job ID</th>
+      <th style="width:95px">วันที่รับ</th>
+      <th style="width:110px">วันที่ต้องการรับ</th>
+      <th style="width:95px">รหัสลูกค้า</th>
+      <th style="width:150px">ชื่อสถานประกอบการ</th>
+      <th style="width:170px">ชิ้นงาน</th>
+      <th style="width:110px">ประเภทชุบ</th>
+      <th style="width:90px">สี</th>
       <th style="width:65px">จำนวน</th>
-      <th style="width:65px">น้ำหนัก</th>
-      <th style="width:140px">สถานะงาน</th>
+      <th style="width:75px">น้ำหนัก</th>
+      <th style="width:150px">สถานะงาน</th>
     </tr></thead>
-    <tbody>${rows.map(j => `<tr>
-      <td style="font-weight:500;color:var(--brand);">${j.jobId||''}</td>
+    <tbody>${rows.map(j => `<tr style="cursor:pointer;" onclick="openJobDetail(${j.rowIndex})">
+      <td style="font-weight:600;color:var(--brand);">${j.jobId||''}</td>
       <td>${j.dateIn||'—'}</td>
       <td>${j.dateWant||'—'}</td>
       <td style="color:var(--brand);font-weight:500;">${j.custCode||'—'}</td>
-      <td>${j.custName||'—'}</td>
-      <td style="white-space:normal;line-height:1.4;">${j.desc||'—'}</td>
+      <td title="${j.custName||''}">${j.custName||'—'}</td>
+      <td title="${j.desc||''}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;">${j.desc||'—'}</td>
       <td>${j.platType||'—'}</td>
-      <td>${j.color||'—'}</td>
+      <td title="${j.color||''}" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${j.color||'—'}</td>
       <td style="text-align:right;">${j.qty||'—'}</td>
       <td style="text-align:right;">${j.weight ? j.weight+' kg' : '—'}</td>
-      <td>
+      <td onclick="event.stopPropagation()">
         <select style="font-size:12px;padding:4px 8px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;${STATUS_COLOR[j.status]||''}"
           onchange="quickUpdateStatus(${j.rowIndex}, this.value)">
           <option value="รอดำเนินการ" ${j.status==='รอดำเนินการ'?'selected':''}>รอดำเนินการ</option>
@@ -1028,6 +1028,81 @@ function clearJobForm() {
   document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
 }
 
+
+// ── Job Detail Modal ──
+function openJobDetail(rowIndex) {
+  var j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!j) return;
+
+  document.getElementById('modal-job-title').textContent = 'รายละเอียดงาน: ' + (j.jobId||'');
+  var statusStyle = STATUS_COLOR[j.status] || '';
+  var totalPrice  = (j.qty && j.price) ? String.fromCharCode(3647) + Number(j.qty * j.price).toLocaleString() : '—';
+  var priceStr    = j.price ? String.fromCharCode(3647) + Number(j.price).toLocaleString() : '—';
+  var qtyStr      = j.qty   ? j.qty + ' ชิ้น' : '—';
+  var weightStr   = j.weight ? j.weight + ' กิโลกรัม' : '—';
+  var noteHtml    = j.note
+    ? '<div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;">หมายเหตุ</div>'
+      + '<div style="background:var(--warn-bg);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--warn);">' + j.note + '</div></div>'
+    : '';
+
+  var statuses = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'];
+  var statusBtns = statuses.map(function(s) {
+    var activeStyle = j.status === s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
+    return '<button class="btn btn-sm" style="' + activeStyle + '"'
+      + ' onclick="quickUpdateStatus(' + j.rowIndex + ',&quot;' + s + '&quot;);closeJobDetail();">'
+      + s + '</button>';
+  }).join('');
+
+  document.getElementById('modal-job-body').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">'
+      + modalRow('Job ID', '<span style="font-weight:700;color:var(--brand);font-size:15px;">'+(j.jobId||'—')+'</span>')
+      + modalRow('สถานะงาน', '<span style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;'+statusStyle+'">'+(j.status||'—')+'</span>')
+      + modalRow('วันที่รับงาน', j.dateIn||'—')
+      + modalRow('วันที่ต้องการรับสินค้า', j.dateWant||'—')
+    + '</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">ข้อมูลลูกค้า</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+        + modalRow('รหัสลูกค้า', '<span style="color:var(--brand);font-weight:600;">'+(j.custCode||'—')+'</span>')
+        + modalRow('ชื่อสถานประกอบการ', j.custName||'—')
+      + '</div>'
+    + '</div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">รายละเอียดชิ้นงาน</div>'
+      + '<div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.7;">'+(j.desc||'—')+'</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">'
+        + modalRow('ประเภทการชุบ', j.platType||'—')
+        + modalRow('สีของชิ้นงาน', j.color||'—')
+        + modalRow('จำนวนชิ้นงาน', qtyStr)
+        + modalRow('น้ำหนัก', weightStr)
+        + modalRow('ราคาต่อหน่วย', priceStr)
+        + modalRow('ราคารวม', totalPrice)
+      + '</div>'
+    + '</div>'
+    + noteHtml
+    + '<div style="border-top:1px solid var(--border);padding-top:16px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">เปลี่ยนสถานะงาน</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + statusBtns + '</div>'
+    + '</div>';
+
+  document.getElementById('job-modal-overlay').style.display = 'block';
+  document.getElementById('job-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function modalRow(label, value) {
+  return '<div style="background:var(--bg);border-radius:var(--r);padding:10px 12px;">'+
+    '<div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;">'+label+'</div>'+
+    '<div style="font-size:13px;color:var(--text);">'+value+'</div>'+
+  '</div>';
+}
+
+function closeJobDetail() {
+  document.getElementById('job-modal-overlay').style.display = 'none';
+  document.getElementById('job-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
 
 // ── Date Range Picker helpers ──
 function toggleDatePicker(key) {
