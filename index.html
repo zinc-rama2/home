@@ -272,15 +272,47 @@
               </div>
               <div class="card-sub" id="jobs-count">กำลังโหลด...</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <select id="filter-status" onchange="filterJobs()" style="font-size:12px;padding:5px 8px;width:auto;">
-                <option value="">ทุกสถานะ</option>
-                <option value="รอดำเนินการ">รอดำเนินการ</option>
-                <option value="กำลังชุบ">กำลังชุบ</option>
-                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
-                <option value="รอรับสินค้า">รอรับสินค้า</option>
-              </select>
+            <button class="btn btn-sm" onclick="loadJobs()">
+              <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>รีเฟรช
+            </button>
+          </div>
+
+          <!-- Search & Filter bar -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px;align-items:end;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ค้นหา</div>
+              <input type="text" id="job-search" placeholder="Job ID / ลูกค้า / ชิ้นงาน / ประเภทชุบ..."
+                oninput="filterJobs()" style="width:100%;" />
             </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">วันที่รับงาน</div>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="filter-date-from" oninput="filterJobs()" style="flex:1;font-size:12px;" title="ตั้งแต่วันที่" />
+                <input type="date" id="filter-date-to"   oninput="filterJobs()" style="flex:1;font-size:12px;" title="ถึงวันที่" />
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ประเภทชุบ / สถานะ</div>
+              <div style="display:flex;gap:4px;">
+                <select id="filter-plattype" onchange="filterJobs()" style="flex:1;font-size:12px;padding:7px 6px;">
+                  <option value="">ทุกประเภท</option>
+                  <option value="ซิงค์ (Zinc)">ซิงค์</option>
+                  <option value="โครม 3 (Cr3)">โครม 3</option>
+                  <option value="โครม 6 (Cr6)">โครม 6</option>
+                  <option value="EDP">EDP</option>
+                </select>
+                <select id="filter-status" onchange="filterJobs()" style="flex:1;font-size:12px;padding:7px 6px;">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="กำลังชุบ">กำลังชุบ</option>
+                  <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                  <option value="รอรับสินค้า">รอรับสินค้า</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-sm" onclick="clearJobFilter()" style="margin-top:18px;">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ล้าง
+            </button>
           </div>
           <div class="tbl-wrap" id="jobs-table-body">
             <div class="empty"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ยังไม่มีรายการงาน</div>
@@ -724,9 +756,48 @@ async function loadJobs() {
 }
 
 function filterJobs() {
-  const s = document.getElementById('filter-status').value;
-  const filtered = s ? allJobs.filter(j => j.status === s) : allJobs;
+  const q         = (document.getElementById('job-search').value || '').trim().toLowerCase();
+  const status    = document.getElementById('filter-status').value;
+  const plattype  = document.getElementById('filter-plattype').value;
+  const dateFrom  = document.getElementById('filter-date-from').value;
+  const dateTo    = document.getElementById('filter-date-to').value;
+
+  const filtered = allJobs.filter(j => {
+    // ค้นหาข้อความ
+    if (q) {
+      const match =
+        String(j.jobId    ||'').toLowerCase().includes(q) ||
+        String(j.custCode ||'').toLowerCase().includes(q) ||
+        String(j.custName ||'').toLowerCase().includes(q) ||
+        String(j.desc     ||'').toLowerCase().includes(q) ||
+        String(j.platType ||'').toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    // filter สถานะ
+    if (status && j.status !== status) return false;
+    // filter ประเภทชุบ
+    if (plattype && j.platType !== plattype) return false;
+    // filter วันที่รับงาน
+    if (dateFrom && j.dateIn && j.dateIn < dateFrom) return false;
+    if (dateTo   && j.dateIn && j.dateIn > dateTo)   return false;
+    return true;
+  });
+
+  const total = filtered.length;
+  document.getElementById('jobs-count').textContent =
+    'แสดง ' + total + ' / ' + allJobs.length + ' รายการ' +
+    (total < allJobs.length ? ' (กรองแล้ว)' : '');
   renderJobsTable(filtered);
+}
+
+function clearJobFilter() {
+  document.getElementById('job-search').value       = '';
+  document.getElementById('filter-status').value    = '';
+  document.getElementById('filter-plattype').value  = '';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value   = '';
+  document.getElementById('jobs-count').textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
+  renderJobsTable(allJobs);
 }
 
 const STATUS_COLOR = {
@@ -746,7 +817,7 @@ function renderJobsTable(rows) {
     <thead><tr>
       <th style="width:110px">Job ID</th>
       <th style="width:90px">วันที่รับ</th>
-      <th style="width:90px">วันที่ต้องการ</th>
+      <th style="width:90px">วันที่ต้องการรับสินค้า</th>
       <th style="width:130px">ลูกค้า</th>
       <th style="width:150px">ชิ้นงาน</th>
       <th style="width:100px">ประเภทชุบ</th>
