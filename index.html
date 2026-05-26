@@ -956,66 +956,68 @@ async function quickUpdateStatus(rowIndex, newStatus) {
 
 // ── ค้นหาลูกค้าจากชื่อสถานประกอบการ ──
 function searchJobByName() {
-  var q  = (document.getElementById('j-custname').value || '').trim().toLowerCase();
-  var dd = document.getElementById('j-name-dropdown');
-  if (!q) { dd.style.display='none'; return; }
-  var filtered = allCustomers.filter(function(c) {
+  const q  = (document.getElementById('j-custname').value || '').trim().toLowerCase();
+  const dd = document.getElementById('j-name-dropdown');
+  if (!q) { dd.style.display = 'none'; return; }
+  const filtered = allCustomers.filter(function(c) {
     return (c.name||'').toLowerCase().includes(q);
-  }).slice(0,8);
-  if (!filtered.length) { dd.style.display='none'; return; }
+  }).slice(0, 8);
+  if (!filtered.length) { dd.style.display = 'none'; return; }
   dd.style.display = 'block';
-  dd.innerHTML = filtered.map(function(c) {
-    return '<div onclick="selectJobByName(\''+c.code+'\',\''+c.name.replace(/'/g,"&#39;")+'\',' +
-           '\''+( c.contact||'').replace(/'/g,"&#39;")+'\' )"' +
-           ' style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"' +
-           ' onmouseover="this.style.background='var(--brand-light)'"' +
-           ' onmouseout="this.style.background=''">' +
-           '<div style="font-weight:600;color:var(--text);">' + c.name + '</div>' +
-           '<div style="font-size:11px;color:var(--text-3);">รหัส: ' + (c.code||'—') + ' · ผู้ประสานงาน: ' + (c.contact||'—') + '</div>' +
-           '</div>';
-  }).join('');
+  while (dd.firstChild) dd.removeChild(dd.firstChild);
+  filtered.forEach(function(c) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #E2E8F0;';
+    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">' + (c.name||'') + '</div>'
+      + '<div style="font-size:11px;color:#718096;">รหัส: ' + (c.code||'—') + ' · ผู้ประสานงาน: ' + (c.contact||'—') + '</div>';
+    div.addEventListener('mouseenter', function(){ this.style.background = '#E6F1FB'; });
+    div.addEventListener('mouseleave', function(){ this.style.background = ''; });
+    div.addEventListener('click', function() { selectJobByName(c.code||'', c.name||'', c.contact||''); });
+    dd.appendChild(div);
+  });
 }
 
 function selectJobByName(code, name, contact) {
-  document.getElementById('j-custcode').value  = code;
-  document.getElementById('j-custname').value  = name;
-  document.getElementById('j-contact').value   = contact||'';
+  document.getElementById('j-custcode').value = code;
+  document.getElementById('j-custname').value = name;
+  document.getElementById('j-contact').value  = contact || '';
   document.getElementById('j-name-dropdown').style.display = 'none';
 }
 
 // ── ค้นหาลูกค้าจากชื่อผู้ประสานงาน ──
 function searchJobByContact() {
-  var q  = (document.getElementById('j-contact').value || '').trim().toLowerCase();
-  var dd = document.getElementById('j-contact-dropdown');
-  if (!q) { dd.style.display='none'; return; }
-  var filtered = allCustomers.filter(function(c) {
+  const q  = (document.getElementById('j-contact').value || '').trim().toLowerCase();
+  const dd = document.getElementById('j-contact-dropdown');
+  if (!q) { dd.style.display = 'none'; return; }
+  const filtered = allCustomers.filter(function(c) {
     return (c.contact||'').toLowerCase().includes(q);
-  }).slice(0,8);
-  if (!filtered.length) { dd.style.display='none'; return; }
+  }).slice(0, 8);
+  if (!filtered.length) { dd.style.display = 'none'; return; }
   dd.style.display = 'block';
-  dd.innerHTML = filtered.map(function(c) {
-    return '<div onclick="selectJobByContact(\''+c.code+'\',\''+c.name.replace(/'/g,"&#39;")+'\',' +
-           '\''+( c.contact||'').replace(/'/g,"&#39;")+'\' )"' +
-           ' style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);"' +
-           ' onmouseover="this.style.background='var(--brand-light)'"' +
-           ' onmouseout="this.style.background=''">' +
-           '<div style="font-weight:600;color:var(--text);">' + (c.contact||'—') + '</div>' +
-           '<div style="font-size:11px;color:var(--text-3);">' + c.name + ' · รหัส: ' + (c.code||'—') + '</div>' +
-           '</div>';
-  }).join('');
+  while (dd.firstChild) dd.removeChild(dd.firstChild);
+  filtered.forEach(function(c) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #E2E8F0;';
+    div.innerHTML = '<div style="font-weight:600;color:#1A202C;">' + (c.contact||'—') + '</div>'
+      + '<div style="font-size:11px;color:#718096;">' + (c.name||'') + ' · รหัส: ' + (c.code||'—') + '</div>';
+    div.addEventListener('mouseenter', function(){ this.style.background = '#E6F1FB'; });
+    div.addEventListener('mouseleave', function(){ this.style.background = ''; });
+    div.addEventListener('click', function() { selectJobByContact(c.code||'', c.name||'', c.contact||''); });
+    dd.appendChild(div);
+  });
 }
 
 function selectJobByContact(code, name, contact) {
-  document.getElementById('j-custcode').value  = code;
-  document.getElementById('j-custname').value  = name;
-  document.getElementById('j-contact').value   = contact||'';
+  document.getElementById('j-custcode').value = code;
+  document.getElementById('j-custname').value = name;
+  document.getElementById('j-contact').value  = contact || '';
   document.getElementById('j-contact-dropdown').style.display = 'none';
 }
 
 // ── toggle ชิ้น / น้ำหนัก ──
 function toggleQtyMode(mode) {
-  var qtyWrap    = document.getElementById('j-qty-wrap');
-  var weightWrap = document.getElementById('j-weight-wrap');
+  const qtyWrap    = document.getElementById('j-qty-wrap');
+  const weightWrap = document.getElementById('j-weight-wrap');
   if (mode === 'piece') {
     qtyWrap.style.display    = 'flex';
     weightWrap.style.display = 'none';
@@ -1030,12 +1032,12 @@ function toggleQtyMode(mode) {
 
 // ── คำนวณราคาสุทธิ ──
 function calcTotal() {
-  var mode  = document.querySelector('input[name="qty-mode"]:checked').value;
-  var qty   = parseFloat(mode === 'piece'
+  const mode  = document.querySelector('input[name="qty-mode"]:checked').value;
+  const qty   = parseFloat(mode === 'piece'
     ? document.getElementById('j-qty').value
     : document.getElementById('j-weight').value) || 0;
-  var price = parseFloat(document.getElementById('j-price').value) || 0;
-  var total = qty * price;
+  const price = parseFloat(document.getElementById('j-price').value) || 0;
+  const total = qty * price;
   document.getElementById('j-total').value = total > 0
     ? '฿' + total.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})
     : '';
@@ -1066,11 +1068,11 @@ async function saveJob() {
   if (!color)    { document.getElementById('j-color').classList.add('field-error');    hasError=true; }
   if (hasError)  { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
 
-  var qtyMode    = document.querySelector('input[name="qty-mode"]:checked').value;
-  var qtyVal     = qtyMode === 'piece' ? parseFloat(document.getElementById('j-qty').value)||0 : 0;
-  var weightVal  = qtyMode === 'weight' ? parseFloat(document.getElementById('j-weight').value)||0 : 0;
-  var priceVal   = parseFloat(document.getElementById('j-price').value)||0;
-  var totalVal   = (qtyMode === 'piece' ? qtyVal : weightVal) * priceVal;
+  const qtyMode   = document.querySelector('input[name="qty-mode"]:checked').value;
+  const qtyVal    = qtyMode === 'piece' ? parseFloat(document.getElementById('j-qty').value)||0 : 0;
+  const weightVal = qtyMode === 'weight' ? parseFloat(document.getElementById('j-weight').value)||0 : 0;
+  const priceVal  = parseFloat(document.getElementById('j-price').value)||0;
+  const totalVal  = (qtyMode === 'piece' ? qtyVal : weightVal) * priceVal;
 
   const dataObj = {
     dateIn, dateWant,
@@ -1108,14 +1110,14 @@ async function saveJob() {
 
 function clearJobForm() {
   ['j-datein','j-datewant','j-custcode','j-custname','j-contact','j-desc','j-colornote','j-qty','j-weight','j-price','j-total','j-note']
-    .forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    .forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('j-plattype').value = '';
   document.getElementById('j-color').value    = '';
   document.getElementById('j-status').value   = 'รอดำเนินการ';
   document.getElementById('j-colornote-wrap').style.display = 'none';
   document.querySelectorAll('#page-jobs .req-field').forEach(function(el){ el.classList.remove('field-error'); });
   // reset qty mode กลับเป็น ชิ้น
-  var pieceRadio = document.querySelector('input[name="qty-mode"][value="piece"]');
+  const pieceRadio = document.querySelector('input[name="qty-mode"][value="piece"]');
   if (pieceRadio) { pieceRadio.checked = true; toggleQtyMode('piece'); }
   document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
 }
@@ -1123,24 +1125,24 @@ function clearJobForm() {
 
 // ── Job Detail Modal ──
 function openJobDetail(rowIndex) {
-  var j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
+  const j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
   if (!j) return;
 
   document.getElementById('modal-job-title').textContent = 'รายละเอียดงาน: ' + (j.jobId||'');
-  var statusStyle = STATUS_COLOR[j.status] || '';
-  var totalPrice  = (j.qty && j.price) ? String.fromCharCode(3647) + Number(j.qty * j.price).toLocaleString() : '—';
-  var priceStr    = j.price ? String.fromCharCode(3647) + Number(j.price).toLocaleString() : '—';
-  var qtyStr      = j.qty   ? j.qty + ' ชิ้น' : '—';
-  var weightStr   = j.weight ? j.weight + ' กิโลกรัม' : '—';
-  var noteHtml    = j.note
+  const statusStyle = STATUS_COLOR[j.status] || '';
+  const totalPrice  = (j.qty && j.price) ? String.fromCharCode(3647) + Number(j.qty * j.price).toLocaleString() : '—';
+  const priceStr    = j.price ? String.fromCharCode(3647) + Number(j.price).toLocaleString() : '—';
+  const qtyStr      = j.qty   ? j.qty + ' ชิ้น' : '—';
+  const weightStr   = j.weight ? j.weight + ' กิโลกรัม' : '—';
+  const noteHtml    = j.note
     ? '<div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">'
       + '<div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;">หมายเหตุ</div>'
       + '<div style="background:var(--warn-bg);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--warn);">' + j.note + '</div></div>'
     : '';
 
-  var statuses = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'];
-  var statusBtns = statuses.map(function(s) {
-    var activeStyle = j.status === s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
+  const statuses = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'];
+  const statusBtns = statuses.map(function(s) {
+    const activeStyle = j.status === s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
     return '<button class="btn btn-sm" style="' + activeStyle + '"'
       + ' onclick="quickUpdateStatus(' + j.rowIndex + ',&quot;' + s + '&quot;);closeJobDetail();">'
       + s + '</button>';
