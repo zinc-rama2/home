@@ -277,38 +277,91 @@
             </button>
           </div>
 
-          <!-- Search & Filter bar -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:12px;align-items:end;">
+          <!-- Search & Filter bar — Row 1 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;align-items:end;">
             <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ค้นหา</div>
-              <input type="text" id="job-search" placeholder="Job ID / ลูกค้า / ชิ้นงาน / ประเภทชุบ..."
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ค้นหา (Job ID / คำอธิบายชิ้นงาน)</div>
+              <input type="text" id="job-search" placeholder="Job ID / คำอธิบายชิ้นงาน / ประเภทชุบ..."
                 oninput="filterJobs()" style="width:100%;" />
             </div>
             <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">รหัสลูกค้า</div>
+              <input type="text" id="filter-custcode" placeholder="ค้นหารหัสลูกค้า..."
+                oninput="filterJobs()" style="width:100%;" />
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ชื่อสถานประกอบการ</div>
+              <input type="text" id="filter-custname" placeholder="ค้นหาชื่อสถานประกอบการ..."
+                oninput="filterJobs()" style="width:100%;" />
+            </div>
+          </div>
+          <!-- Search & Filter bar — Row 2 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:12px;align-items:end;">
+            <div>
               <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">วันที่รับงาน</div>
-              <div style="display:flex;gap:4px;">
-                <input type="date" id="filter-date-from" oninput="filterJobs()" style="flex:1;font-size:12px;" title="ตั้งแต่วันที่" />
-                <input type="date" id="filter-date-to"   oninput="filterJobs()" style="flex:1;font-size:12px;" title="ถึงวันที่" />
+              <div style="position:relative;">
+                <div id="dr-datein-display" onclick="toggleDatePicker('datein')"
+                  style="font-size:13px;padding:8px 10px;border:1px solid var(--border-md);border-radius:var(--r);background:var(--bg);cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-2);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span id="dr-datein-label">เลือกช่วงวันที่...</span>
+                </div>
+                <div id="dr-datein-picker" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:100;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--rl);padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:280px;">
+                  <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div>
+                      <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:4px;">ตั้งแต่วันที่</div>
+                      <input type="date" id="filter-date-from" oninput="updateDateLabel('datein');filterJobs()" style="width:100%;font-size:13px;" />
+                    </div>
+                    <div>
+                      <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:4px;">ถึงวันที่</div>
+                      <input type="date" id="filter-date-to" oninput="updateDateLabel('datein');filterJobs()" style="width:100%;font-size:13px;" />
+                    </div>
+                    <button class="btn btn-sm" onclick="clearDateRange('datein')" style="align-self:flex-end;">ล้าง</button>
+                  </div>
+                </div>
               </div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ประเภทชุบ / สถานะ</div>
-              <div style="display:flex;gap:4px;">
-                <select id="filter-plattype" onchange="filterJobs()" style="flex:1;font-size:12px;padding:7px 6px;">
-                  <option value="">ทุกประเภท</option>
-                  <option value="ซิงค์ (Zinc)">ซิงค์</option>
-                  <option value="โครม 3 (Cr3)">โครม 3</option>
-                  <option value="โครม 6 (Cr6)">โครม 6</option>
-                  <option value="EDP">EDP</option>
-                </select>
-                <select id="filter-status" onchange="filterJobs()" style="flex:1;font-size:12px;padding:7px 6px;">
-                  <option value="">ทุกสถานะ</option>
-                  <option value="รอดำเนินการ">รอดำเนินการ</option>
-                  <option value="กำลังชุบ">กำลังชุบ</option>
-                  <option value="เสร็จแล้ว">เสร็จแล้ว</option>
-                  <option value="รอรับสินค้า">รอรับสินค้า</option>
-                </select>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">วันที่ต้องการรับสินค้า</div>
+              <div style="position:relative;">
+                <div id="dr-datewant-display" onclick="toggleDatePicker('datewant')"
+                  style="font-size:13px;padding:8px 10px;border:1px solid var(--border-md);border-radius:var(--r);background:var(--bg);cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-2);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span id="dr-datewant-label">เลือกช่วงวันที่...</span>
+                </div>
+                <div id="dr-datewant-picker" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:100;background:var(--surface);border:1px solid var(--border-md);border-radius:var(--rl);padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:280px;">
+                  <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div>
+                      <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:4px;">ตั้งแต่วันที่</div>
+                      <input type="date" id="filter-datewant-from" oninput="updateDateLabel('datewant');filterJobs()" style="width:100%;font-size:13px;" />
+                    </div>
+                    <div>
+                      <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:4px;">ถึงวันที่</div>
+                      <input type="date" id="filter-datewant-to" oninput="updateDateLabel('datewant');filterJobs()" style="width:100%;font-size:13px;" />
+                    </div>
+                    <button class="btn btn-sm" onclick="clearDateRange('datewant')" style="align-self:flex-end;">ล้าง</button>
+                  </div>
+                </div>
               </div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">ประเภทการชุบ</div>
+              <select id="filter-plattype" onchange="filterJobs()" style="width:100%;font-size:12px;padding:7px 8px;">
+                <option value="">ทุกประเภท</option>
+                <option value="ซิงค์ (Zinc)">ซิงค์ (Zinc)</option>
+                <option value="โครม 3 (Cr3)">โครม 3 (Cr3)</option>
+                <option value="โครม 6 (Cr6)">โครม 6 (Cr6)</option>
+                <option value="EDP">EDP</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">สถานะงาน</div>
+              <select id="filter-status" onchange="filterJobs()" style="width:100%;font-size:12px;padding:7px 8px;">
+                <option value="">ทุกสถานะ</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="กำลังชุบ">กำลังชุบ</option>
+                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+              </select>
             </div>
             <button class="btn btn-sm" onclick="clearJobFilter()" style="margin-top:18px;">
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ล้าง
@@ -756,30 +809,39 @@ async function loadJobs() {
 }
 
 function filterJobs() {
-  const q         = (document.getElementById('job-search').value || '').trim().toLowerCase();
-  const status    = document.getElementById('filter-status').value;
-  const plattype  = document.getElementById('filter-plattype').value;
-  const dateFrom  = document.getElementById('filter-date-from').value;
-  const dateTo    = document.getElementById('filter-date-to').value;
+  const q            = (document.getElementById('job-search').value      || '').trim().toLowerCase();
+  const custcode     = (document.getElementById('filter-custcode').value  || '').trim().toLowerCase();
+  const custname     = (document.getElementById('filter-custname').value  || '').trim().toLowerCase();
+  const status       = document.getElementById('filter-status').value;
+  const plattype     = document.getElementById('filter-plattype').value;
+  const dateFrom     = document.getElementById('filter-date-from').value;
+  const dateTo       = document.getElementById('filter-date-to').value;
+  const dateWantFrom = document.getElementById('filter-datewant-from').value;
+  const dateWantTo   = document.getElementById('filter-datewant-to').value;
 
   const filtered = allJobs.filter(j => {
-    // ค้นหาข้อความ
+    // ค้นหา Job ID / ชิ้นงาน / ประเภทชุบ
     if (q) {
       const match =
         String(j.jobId    ||'').toLowerCase().includes(q) ||
-        String(j.custCode ||'').toLowerCase().includes(q) ||
-        String(j.custName ||'').toLowerCase().includes(q) ||
         String(j.desc     ||'').toLowerCase().includes(q) ||
         String(j.platType ||'').toLowerCase().includes(q);
       if (!match) return false;
     }
+    // ค้นหารหัสลูกค้า
+    if (custcode && !String(j.custCode||'').toLowerCase().includes(custcode)) return false;
+    // ค้นหาชื่อสถานประกอบการ
+    if (custname && !String(j.custName||'').toLowerCase().includes(custname)) return false;
     // filter สถานะ
-    if (status && j.status !== status) return false;
+    if (status   && j.status   !== status)   return false;
     // filter ประเภทชุบ
     if (plattype && j.platType !== plattype) return false;
     // filter วันที่รับงาน
-    if (dateFrom && j.dateIn && j.dateIn < dateFrom) return false;
-    if (dateTo   && j.dateIn && j.dateIn > dateTo)   return false;
+    if (dateFrom && j.dateIn   && j.dateIn   < dateFrom) return false;
+    if (dateTo   && j.dateIn   && j.dateIn   > dateTo)   return false;
+    // filter วันที่ต้องการรับสินค้า
+    if (dateWantFrom && j.dateWant && j.dateWant < dateWantFrom) return false;
+    if (dateWantTo   && j.dateWant && j.dateWant > dateWantTo)   return false;
     return true;
   });
 
@@ -791,11 +853,15 @@ function filterJobs() {
 }
 
 function clearJobFilter() {
-  document.getElementById('job-search').value       = '';
-  document.getElementById('filter-status').value    = '';
-  document.getElementById('filter-plattype').value  = '';
-  document.getElementById('filter-date-from').value = '';
-  document.getElementById('filter-date-to').value   = '';
+  ['job-search','filter-custcode','filter-custname',
+   'filter-date-from','filter-date-to',
+   'filter-datewant-from','filter-datewant-to'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('filter-status').value   = '';
+  document.getElementById('filter-plattype').value = '';
+  updateDateLabel('datein');
+  updateDateLabel('datewant');
   document.getElementById('jobs-count').textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
   renderJobsTable(allJobs);
 }
@@ -817,9 +883,10 @@ function renderJobsTable(rows) {
     <thead><tr>
       <th style="width:110px">Job ID</th>
       <th style="width:90px">วันที่รับ</th>
-      <th style="width:90px">วันที่ต้องการรับสินค้า</th>
-      <th style="width:130px">ลูกค้า</th>
-      <th style="width:150px">ชิ้นงาน</th>
+      <th style="width:100px">วันที่ต้องการรับ</th>
+      <th style="width:90px">รหัสลูกค้า</th>
+      <th style="width:140px">ชื่อสถานประกอบการ</th>
+      <th style="width:160px">ชิ้นงาน</th>
       <th style="width:100px">ประเภทชุบ</th>
       <th style="width:70px">สี</th>
       <th style="width:65px">จำนวน</th>
@@ -830,12 +897,13 @@ function renderJobsTable(rows) {
       <td style="font-weight:500;color:var(--brand);">${j.jobId||''}</td>
       <td>${j.dateIn||'—'}</td>
       <td>${j.dateWant||'—'}</td>
+      <td style="color:var(--brand);font-weight:500;">${j.custCode||'—'}</td>
       <td>${j.custName||'—'}</td>
       <td style="white-space:normal;line-height:1.4;">${j.desc||'—'}</td>
       <td>${j.platType||'—'}</td>
       <td>${j.color||'—'}</td>
-      <td style="text-align:right;">${j.qty||0}</td>
-      <td style="text-align:right;">${j.weight||0} kg</td>
+      <td style="text-align:right;">${j.qty||'—'}</td>
+      <td style="text-align:right;">${j.weight ? j.weight+' kg' : '—'}</td>
       <td>
         <select style="font-size:12px;padding:4px 8px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;${STATUS_COLOR[j.status]||''}"
           onchange="quickUpdateStatus(${j.rowIndex}, this.value)">
@@ -960,8 +1028,56 @@ function clearJobForm() {
   document.getElementById('j-datein').value = new Date().toISOString().split('T')[0];
 }
 
-// ปิด dropdown เมื่อคลิกที่อื่น
+
+// ── Date Range Picker helpers ──
+function toggleDatePicker(key) {
+  const picker = document.getElementById('dr-' + key + '-picker');
+  const isOpen = picker.style.display !== 'none';
+  // ปิดทุก picker ก่อน
+  ['datein','datewant'].forEach(k => {
+    document.getElementById('dr-' + k + '-picker').style.display = 'none';
+  });
+  if (!isOpen) picker.style.display = 'block';
+}
+
+function updateDateLabel(key) {
+  const fromId = key === 'datein' ? 'filter-date-from' : 'filter-datewant-from';
+  const toId   = key === 'datein' ? 'filter-date-to'   : 'filter-datewant-to';
+  const from   = document.getElementById(fromId).value;
+  const to     = document.getElementById(toId).value;
+  const label  = document.getElementById('dr-' + key + '-label');
+  if (from && to)   label.textContent = formatDateTH(from) + ' — ' + formatDateTH(to);
+  else if (from)    label.textContent = 'ตั้งแต่ ' + formatDateTH(from);
+  else if (to)      label.textContent = 'ถึง ' + formatDateTH(to);
+  else              label.textContent = 'เลือกช่วงวันที่...';
+  label.style.color = (from || to) ? 'var(--brand)' : 'var(--text-3)';
+}
+
+function clearDateRange(key) {
+  const fromId = key === 'datein' ? 'filter-date-from' : 'filter-datewant-from';
+  const toId   = key === 'datein' ? 'filter-date-to'   : 'filter-datewant-to';
+  document.getElementById(fromId).value = '';
+  document.getElementById(toId).value   = '';
+  updateDateLabel(key);
+  filterJobs();
+}
+
+function formatDateTH(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return d + ' ' + months[parseInt(m)] + ' ' + (parseInt(y) + 543);
+}
+
+// ปิด picker เมื่อคลิกที่อื่น
 document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="dr-"]')) {
+    ['datein','datewant'].forEach(k => {
+      const el = document.getElementById('dr-' + k + '-picker');
+      if (el) el.style.display = 'none';
+    });
+  }
+  // ปิด customer dropdown ด้วย
   const dd = document.getElementById('j-cust-dropdown');
   if (dd && !e.target.closest('#j-custcode') && !e.target.closest('#j-cust-dropdown')) {
     dd.style.display = 'none';
@@ -969,6 +1085,7 @@ document.addEventListener('click', function(e) {
 });
 
 loadCustomers();
+
 
 </script>
 </body>
