@@ -510,11 +510,11 @@ function searchCustomers() {
   const q = document.getElementById('search-input').value.trim().toLowerCase();
   if (!q) { toast('กรุณาพิมพ์คำค้นหา', true); return; }
   const filtered = allCustomers.filter(c =>
-    (c.code    || '').toLowerCase().includes(q) ||
-    (c.name    || '').toLowerCase().includes(q) ||
-    (c.contact || '').toLowerCase().includes(q) ||
-    (c.tel     || '').toLowerCase().includes(q) ||
-    (c.biztel  || '').toLowerCase().includes(q)
+    String(c.code    || '').toLowerCase().includes(q) ||
+    String(c.name    || '').toLowerCase().includes(q) ||
+    String(c.contact || '').toLowerCase().includes(q) ||
+    String(c.tel     || '').toLowerCase().includes(q) ||
+    String(c.biztel  || '').toLowerCase().includes(q)
   );
   document.getElementById('results-wrap').style.display = 'block';
   renderTable(filtered);
