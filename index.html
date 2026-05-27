@@ -302,6 +302,41 @@
             </button>
           </div>
         </div>
+
+        <!-- รายการลูกค้าทั้งหมด -->
+        <div class="card">
+          <div class="ov" id="ov-all-customers"><span class="spin">↻</span> กำลังโหลด...</div>
+          <div class="card-head">
+            <div>
+              <div class="card-title">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>รายการลูกค้าทั้งหมด
+              </div>
+              <div class="card-sub" id="all-customer-count">—</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="font-size:11px;color:var(--text-3);">แสดง</div>
+              <select id="cust-page-size" onchange="renderAllCustomers()" style="font-size:12px;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--bg);">
+                <option value="10">10</option>
+                <option value="30" selected>30</option>
+                <option value="50">50</option>
+                <option value="9999">ทั้งหมด</option>
+              </select>
+              <div style="font-size:11px;color:var(--text-3);">รายการ</div>
+            </div>
+          </div>
+          <div style="margin-bottom:8px;display:flex;gap:8px;">
+            <input type="text" id="all-cust-search" placeholder="กรองรายการ..." oninput="renderAllCustomers()"
+              style="flex:1;font-size:12px;padding:6px 10px;" />
+            <select id="all-cust-paytype" onchange="renderAllCustomers()" style="font-size:12px;padding:6px 8px;">
+              <option value="">ทุกประเภทชำระ</option>
+              <option value="เครดิต">เครดิต</option>
+              <option value="เงินสด / โอน">เงินสด / โอน</option>
+            </select>
+          </div>
+          <div class="tbl-wrap" id="all-customers-body">
+            <div class="empty"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>กำลังโหลด...</div>
+          </div>
+        </div>
       </div>
 
       <!-- Job Detail Modal -->
@@ -582,7 +617,60 @@
           </div>
         </div>
       </div>
-      <div class="page" id="page-status"><div class="coming-soon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><h3>ติดตามสถานะงาน</h3><p>กำลังพัฒนา</p></div></div>
+      <div class="page" id="page-status">
+        <!-- Summary Cards -->
+        <div class="stats-grid">
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #856404;" onclick="filterStatusPage('รอดำเนินการ')">
+            <div class="stat-label">รอดำเนินการ</div>
+            <div class="stat-value" id="st-pending" style="color:#856404;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #004085;" onclick="filterStatusPage('กำลังชุบ')">
+            <div class="stat-label">กำลังชุบ</div>
+            <div class="stat-value" id="st-plating" style="color:#004085;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #155724;" onclick="filterStatusPage('เสร็จแล้ว')">
+            <div class="stat-label">เสร็จแล้ว</div>
+            <div class="stat-value" id="st-done" style="color:#155724;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #721C24;" onclick="filterStatusPage('รอรับสินค้า')">
+            <div class="stat-label">รอรับสินค้า</div>
+            <div class="stat-value" id="st-pickup" style="color:#721C24;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ov" id="ov-status"><span class="spin">↻</span> กำลังโหลด...</div>
+          <div class="card-head">
+            <div>
+              <div class="card-title">
+                <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>ติดตามสถานะงาน
+              </div>
+              <div class="card-sub" id="status-count">—</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <select id="status-filter" onchange="renderStatusTable()" style="font-size:12px;padding:6px 8px;border-radius:var(--r);border:1px solid var(--border-md);">
+                <option value="">ทุกสถานะ</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="กำลังชุบ">กำลังชุบ</option>
+                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+              </select>
+              <input type="text" id="status-search" placeholder="ค้นหา Job ID / ลูกค้า..."
+                oninput="renderStatusTable()" style="font-size:12px;padding:6px 10px;width:180px;" />
+              <button class="btn btn-sm" onclick="loadStatusPage()">
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>รีเฟรช
+              </button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="status-table-body">
+            <div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/></svg>กำลังโหลด...</div>
+          </div>
+        </div>
+      </div>
       <div class="page" id="page-invoice"><div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/></svg><h3>ออกบิล / ใบแจ้งหนี้</h3><p>กำลังพัฒนา</p></div></div>
       <div class="page" id="page-finance"><div class="coming-soon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h3>บันทึกรายรับ-รายจ่าย</h3><p>กำลังพัฒนา</p></div></div>
 
@@ -706,6 +794,7 @@ function goPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'customers') loadCustomers();
   if (id === 'jobs') { loadJobs(); clearJobForm(); }
+  if (id === 'status') { loadStatusPage(); }
   if (id === 'dashboard') {
     const el2 = document.getElementById('dash-customers');
     if (el2) el2.textContent = allCustomers.length || '—';
@@ -731,6 +820,7 @@ async function loadCustomers() {
       setSyncChip(true);
       const el = document.getElementById('customer-count');
       if (el) el.textContent = 'ลูกค้าทั้งหมด ' + allCustomers.length + ' ราย';
+      renderAllCustomers();
     } else {
       setSyncChip(false);
       toast('โหลดข้อมูลลูกค้าไม่สำเร็จ: ' + (data.message||''), true);
@@ -1297,6 +1387,154 @@ document.addEventListener('click', function(e) {
     }
   });
 });
+
+// ── ALL CUSTOMERS LIST ───────────────────────────────────
+function renderAllCustomers() {
+  const el       = document.getElementById('all-customers-body');
+  const q        = (document.getElementById('all-cust-search').value||'').trim().toLowerCase();
+  const paytype  = document.getElementById('all-cust-paytype').value;
+  const pageSize = parseInt(document.getElementById('cust-page-size').value)||30;
+
+  let filtered = allCustomers.filter(function(c) {
+    if (q && !(
+      String(c.code||'').toLowerCase().includes(q) ||
+      String(c.name||'').toLowerCase().includes(q) ||
+      String(c.contact||'').toLowerCase().includes(q) ||
+      String(c.tel||'').toLowerCase().includes(q)
+    )) return false;
+    if (paytype && c.paytype !== paytype) return false;
+    return true;
+  });
+
+  const total   = filtered.length;
+  const showing = filtered.slice(0, pageSize);
+  const countEl = document.getElementById('all-customer-count');
+  if (countEl) countEl.textContent = (showing.length === total)
+    ? 'ลูกค้าทั้งหมด ' + total + ' ราย'
+    : 'แสดง ' + showing.length + ' จาก ' + total + ' ราย';
+
+  if (!total) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--border-md)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg>ไม่พบข้อมูล</div>';
+    return;
+  }
+  el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:90px">รหัสลูกค้า</th>'
+    + '<th style="width:160px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:120px">ผู้ประสานงาน</th>'
+    + '<th style="width:110px">เบอร์ผู้ประสานงาน</th>'
+    + '<th style="width:110px">เบอร์สถานประกอบการ</th>'
+    + '<th style="width:85px">ประเภทชำระ</th>'
+    + '<th style="width:75px">เครดิต</th>'
+    + '<th style="width:90px">เริ่มบิล</th>'
+    + '<th style="width:60px">แก้ไข</th>'
+    + '</tr></thead><tbody>'
+    + showing.map(function(c) {
+        return '<tr>'
+          + '<td style="color:var(--brand);font-weight:500;">' + (c.code||'—') + '</td>'
+          + '<td title="' + (c.name||'') + '">' + (c.name||'—') + '</td>'
+          + '<td>' + (c.contact||'—') + '</td>'
+          + '<td>' + (c.tel||'—') + '</td>'
+          + '<td>' + (c.biztel||'—') + '</td>'
+          + '<td><span class="pill ' + pillClass(c.paytype) + '">' + (c.paytype||'—') + '</span></td>'
+          + '<td>' + (c.creditdays ? c.creditdays+' วัน' : '—') + '</td>'
+          + '<td>' + (c.billstart||'—') + '</td>'
+          + '<td><button class="btn btn-sm" onclick="fillCustomerForm(allCustomers['+allCustomers.indexOf(c)+'])">'
+          + '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>'
+          + '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+          + '</button></td></tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+// ── STATUS PAGE ───────────────────────────────────────────
+function loadStatusPage() {
+  if (!currentUserEmail) return;
+  setOv('ov-status', true);
+  apiGet('getJobs').then(function(data) {
+    if (data.status === 'ok') {
+      allJobs = data.rows || [];
+      updateStatusSummary();
+      renderStatusTable();
+    } else {
+      toast('โหลดข้อมูลสถานะไม่สำเร็จ', true);
+    }
+    setOv('ov-status', false);
+  }).catch(function() {
+    toast('เชื่อมต่อไม่ได้', true);
+    setOv('ov-status', false);
+  });
+}
+
+function updateStatusSummary() {
+  const counts = { 'รอดำเนินการ':0, 'กำลังชุบ':0, 'เสร็จแล้ว':0, 'รอรับสินค้า':0 };
+  allJobs.forEach(function(j) { if (counts[j.status] !== undefined) counts[j.status]++; });
+  document.getElementById('st-pending').textContent = counts['รอดำเนินการ'];
+  document.getElementById('st-plating').textContent = counts['กำลังชุบ'];
+  document.getElementById('st-done').textContent    = counts['เสร็จแล้ว'];
+  document.getElementById('st-pickup').textContent  = counts['รอรับสินค้า'];
+}
+
+function filterStatusPage(status) {
+  document.getElementById('status-filter').value = status;
+  renderStatusTable();
+}
+
+function renderStatusTable() {
+  const el     = document.getElementById('status-table-body');
+  const filter = document.getElementById('status-filter').value;
+  const q      = (document.getElementById('status-search').value||'').trim().toLowerCase();
+
+  const filtered = allJobs.filter(function(j) {
+    if (filter && j.status !== filter) return false;
+    if (q && !(
+      String(j.jobId   ||'').toLowerCase().includes(q) ||
+      String(j.custName||'').toLowerCase().includes(q) ||
+      String(j.custCode||'').toLowerCase().includes(q) ||
+      String(j.desc    ||'').toLowerCase().includes(q)
+    )) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('status-count');
+  if (countEl) countEl.textContent = 'แสดง ' + filtered.length + ' / ' + allJobs.length + ' รายการ';
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/></svg>ไม่พบรายการ</div>';
+    return;
+  }
+
+  el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:110px">Job ID</th>'
+    + '<th style="width:90px">วันที่รับ</th>'
+    + '<th style="width:100px">วันที่ต้องการรับ</th>'
+    + '<th style="width:95px">รหัสลูกค้า</th>'
+    + '<th style="width:145px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:160px">คำอธิบายชิ้นงาน</th>'
+    + '<th style="width:100px">ประเภทชุบ</th>'
+    + '<th style="width:150px">สถานะ</th>'
+    + '</tr></thead><tbody>'
+    + filtered.map(function(j) {
+        const sc   = STATUS_COLOR[j.status]||'';
+        const opts = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+          return '<option value="'+s+'"'+(j.status===s?' selected':'')+'>'+s+'</option>';
+        }).join('');
+        // เน้น overdue (ต้องการรับแล้วแต่ยังไม่เสร็จ)
+        const overdue = j.dateWant && j.dateWant < new Date().toISOString().split('T')[0]
+          && j.status !== 'เสร็จแล้ว' && j.status !== 'รอรับสินค้า';
+        return '<tr style="'+(overdue?'background:#FFF5F5;':'')+'">'
+          + '<td style="font-weight:600;color:var(--brand);">' + (j.jobId||'') + (overdue ? ' <span style="color:#A32D2D;font-size:10px;">⚠ เกิน</span>' : '') + '</td>'
+          + '<td>' + (j.dateIn||'—') + '</td>'
+          + '<td style="'+(overdue?'color:#A32D2D;font-weight:600;':'')+ '">' + (j.dateWant||'—') + '</td>'
+          + '<td style="color:var(--brand);">' + (j.custCode||'—') + '</td>'
+          + '<td title="' + (j.custName||'') + '">' + (j.custName||'—') + '</td>'
+          + '<td title="' + (j.desc||'') + '" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">' + (j.desc||'—') + '</td>'
+          + '<td>' + (j.platType||'—') + '</td>'
+          + '<td onclick="event.stopPropagation()">'
+          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value);updateStatusSummary();">'+opts+'</select>'
+          + '</td></tr>';
+      }).join('')
+    + '</tbody></table>';
+}
 
 // ── GOOGLE SIGN-IN (popup mode — ไม่รบกวน JSONP) ─────────
 function handleGoogleSignIn(response) {
