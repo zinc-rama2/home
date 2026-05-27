@@ -196,7 +196,10 @@
       <div class="nav-group">
         <div class="nav-group-label">การเงิน</div>
         <button class="nav-item" onclick="goPage('invoice',this)">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>ออกบิล / ใบแจ้งหนี้
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>ออกบิล
+        </button>
+        <button class="nav-item" onclick="goPage('factory',this)">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>ข้อมูลโรงงาน
         </button>
         <button class="nav-item" onclick="goPage('finance',this)">
           <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>รายรับ-รายจ่าย
@@ -281,6 +284,12 @@
             <div class="fg"><label for="f-biztel">เบอร์สถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-biztel" class="req-field" placeholder="02-xxx-xxxx" inputmode="numeric" /></div>
             <div class="fg"><label for="f-contact">ชื่อผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-contact" class="req-field" placeholder="ชื่อ-นามสกุล" /></div>
             <div class="fg"><label for="f-tel">เบอร์ผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-tel" class="req-field" placeholder="08x-xxx-xxxx" inputmode="numeric" /></div>
+          </div>
+          <div class="sec-label">ข้อมูลทางกฎหมาย</div>
+          <div class="form-grid">
+            <div class="fg"><label for="f-taxid">เลขประจำตัวผู้เสียภาษี</label><input type="text" id="f-taxid" placeholder="1-2345-67890-12-3" maxlength="17" /></div>
+            <div class="fg"><label for="f-branch">สาขา</label><input type="text" id="f-branch" placeholder="สำนักงานใหญ่ หรือ สาขาที่..." /></div>
+            <div class="fg"><label for="f-website">เว็บไซต์ / อีเมล์</label><input type="text" id="f-website" placeholder="www.example.com" /></div>
           </div>
           <div class="sec-label">การชำระเงิน</div>
           <div class="form-grid">
@@ -885,6 +894,54 @@
           </div>
         </div>
       </div>
+      <!-- FACTORY DATA PAGE -->
+      <div class="page" id="page-factory">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>ข้อมูลโรงงาน / กิจการ
+            </div>
+            <span style="font-size:11px;color:var(--text-3);">ข้อมูลนี้จะปรากฏในเอกสารทุกประเภท</span>
+          </div>
+          <div class="sec-label">ข้อมูลทั่วไป</div>
+          <div class="form-grid">
+            <div class="fg s2"><label>ชื่อกิจการ / โรงงาน <span style="color:#C53030">*</span></label><input type="text" id="fc-name" placeholder="เช่น บริษัท ระบบโรงชุบ จำกัด" /></div>
+            <div class="fg"><label>เลขประจำตัวผู้เสียภาษี</label><input type="text" id="fc-taxid" placeholder="1-2345-67890-12-3" maxlength="17" /></div>
+            <div class="fg"><label>สาขา</label><input type="text" id="fc-branch" placeholder="สำนักงานใหญ่ หรือ สาขาที่..." /></div>
+            <div class="fg"><label>เบอร์โทรศัพท์</label><input type="text" id="fc-tel" placeholder="02-xxx-xxxx" /></div>
+            <div class="fg"><label>โทรสาร (Fax)</label><input type="text" id="fc-fax" placeholder="02-xxx-xxxx" /></div>
+            <div class="fg"><label>อีเมล์</label><input type="text" id="fc-email" placeholder="contact@example.com" /></div>
+            <div class="fg s3"><label>ที่อยู่</label><textarea id="fc-addr" placeholder="ที่อยู่เต็ม รวมแขวง เขต จังหวัด รหัสไปรษณีย์" style="min-height:72px;"></textarea></div>
+          </div>
+          <div class="sec-label">ข้อมูลธนาคาร</div>
+          <div class="form-grid">
+            <div class="fg"><label>ชื่อธนาคาร</label><input type="text" id="fc-bank-name" placeholder="เช่น ธนาคารกสิกรไทย" /></div>
+            <div class="fg"><label>ชื่อบัญชี</label><input type="text" id="fc-bank-acct-name" placeholder="ชื่อบัญชี" /></div>
+            <div class="fg"><label>เลขที่บัญชี</label><input type="text" id="fc-bank-acct-no" placeholder="000-0-00000-0" /></div>
+            <div class="fg"><label>ประเภทบัญชี</label>
+              <select id="fc-bank-type"><option value="ออมทรัพย์">ออมทรัพย์</option><option value="กระแสรายวัน">กระแสรายวัน</option></select>
+            </div>
+            <div class="fg"><label>สาขาธนาคาร</label><input type="text" id="fc-bank-branch" placeholder="เช่น สาขาลาดพร้าว" /></div>
+            <div class="fg"><label>พร้อมเพย์ / PromptPay</label><input type="text" id="fc-promptpay" placeholder="หมายเลขโทรศัพท์ หรือ เลขประจำตัวผู้เสียภาษี" /></div>
+          </div>
+          <div class="sec-label">ข้อมูลเพิ่มเติม</div>
+          <div class="form-grid">
+            <div class="fg"><label>เว็บไซต์</label><input type="text" id="fc-website" placeholder="www.example.com" /></div>
+            <div class="fg"><label>Line ID / Social</label><input type="text" id="fc-social" placeholder="@example" /></div>
+            <div class="fg"><label>ผู้มีอำนาจลงนาม</label><input type="text" id="fc-signatory" placeholder="ชื่อ-นามสกุล ผู้มีอำนาจ" /></div>
+            <div class="fg s3"><label>หมายเหตุ / ข้อความท้ายเอกสาร</label><textarea id="fc-footer-note" placeholder="เช่น ขอบคุณที่ใช้บริการ กรุณาชำระเงินภายใน 30 วัน" style="min-height:56px;"></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn" onclick="loadFactoryData()">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>โหลดข้อมูลที่บันทึกไว้
+            </button>
+            <button class="btn btn-primary" onclick="saveFactoryData()">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>บันทึกข้อมูลโรงงาน
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-finance"><div class="coming-soon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h3>บันทึกรายรับ-รายจ่าย</h3><p>กำลังพัฒนา</p></div></div>
 
     </div>
@@ -907,7 +964,7 @@ let jobSortAsc = false;  // DESC = ล่าสุดก่อน
 const PAGE_TITLES = {
   dashboard:'Dashboard', customers:'ข้อมูลลูกค้า',
   jobs:'บันทึกงานชุบ / รับงาน', status:'ติดตามสถานะงาน',
-  invoice:'ออกบิล / ใบแจ้งหนี้', finance:'รายรับ-รายจ่าย'
+  invoice:'ออกบิล', finance:'รายรับ-รายจ่าย', factory:'ข้อมูลโรงงาน', factory:'ข้อมูลโรงงาน'
 };
 
 // ── API call (JSONP — ทำงานได้กับ Apps Script) ───────────
@@ -1011,6 +1068,7 @@ function goPage(id, el) {
   if (id === 'jobs') { loadJobs(); clearJobForm(); }
   if (id === 'status')  { loadStatusPage(); }
   if (id === 'invoice') { loadInvoicePage(); }
+  if (id === 'factory') { loadFactoryData(); }
   if (id === 'dashboard') {
     const el2 = document.getElementById('dash-customers');
     if (el2) el2.textContent = allCustomers.length || '—';
@@ -1165,8 +1223,8 @@ function fillCustomerForm(c) {
 }
 
 function clearCustomerForm() {
-  ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays']
-    .forEach(function(id){ document.getElementById(id).value=''; });
+  ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays','f-taxid','f-branch','f-website']
+    .forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-paytype').value = '';
   document.getElementById('f-mode').value          = 'insert';
   document.getElementById('f-original-name').value = '';
@@ -1857,30 +1915,80 @@ function clearStatusFilter() {
   renderStatusTable();
 }
 
+// ── FACTORY DATA ─────────────────────────────────────────
+let factoryData = {
+  name:'', taxid:'', branch:'สำนักงานใหญ่', addr:'', tel:'', fax:'', email:'',
+  bankName:'', bankAcctName:'', bankAcctNo:'', bankType:'ออมทรัพย์', bankBranch:'',
+  promptpay:'', website:'', social:'', signatory:'', footerNote:''
+};
+
+function saveFactoryData() {
+  factoryData = {
+    name:        document.getElementById('fc-name').value.trim(),
+    taxid:       document.getElementById('fc-taxid').value.trim(),
+    branch:      document.getElementById('fc-branch').value.trim(),
+    addr:        document.getElementById('fc-addr').value.trim(),
+    tel:         document.getElementById('fc-tel').value.trim(),
+    fax:         document.getElementById('fc-fax').value.trim(),
+    email:       document.getElementById('fc-email').value.trim(),
+    bankName:    document.getElementById('fc-bank-name').value.trim(),
+    bankAcctName:document.getElementById('fc-bank-acct-name').value.trim(),
+    bankAcctNo:  document.getElementById('fc-bank-acct-no').value.trim(),
+    bankType:    document.getElementById('fc-bank-type').value,
+    bankBranch:  document.getElementById('fc-bank-branch').value.trim(),
+    promptpay:   document.getElementById('fc-promptpay').value.trim(),
+    website:     document.getElementById('fc-website').value.trim(),
+    social:      document.getElementById('fc-social').value.trim(),
+    signatory:   document.getElementById('fc-signatory').value.trim(),
+    footerNote:  document.getElementById('fc-footer-note').value.trim(),
+  };
+  try { localStorage.setItem('factoryData', JSON.stringify(factoryData)); } catch(e) {}
+  toast('บันทึกข้อมูลโรงงานแล้ว');
+}
+
+function loadFactoryData() {
+  try { const s = localStorage.getItem('factoryData'); if (s) factoryData = JSON.parse(s); } catch(e) {}
+  const map = { name:'fc-name', taxid:'fc-taxid', branch:'fc-branch', addr:'fc-addr', tel:'fc-tel', fax:'fc-fax',
+    email:'fc-email', bankName:'fc-bank-name', bankAcctName:'fc-bank-acct-name', bankAcctNo:'fc-bank-acct-no',
+    bankBranch:'fc-bank-branch', promptpay:'fc-promptpay', website:'fc-website', social:'fc-social',
+    signatory:'fc-signatory', footerNote:'fc-footer-note' };
+  Object.keys(map).forEach(function(k) {
+    const el = document.getElementById(map[k]);
+    if (el && factoryData[k]) el.value = factoryData[k];
+  });
+  const bt = document.getElementById('fc-bank-type');
+  if (bt && factoryData.bankType) bt.value = factoryData.bankType;
+  toast('โหลดข้อมูลโรงงานแล้ว');
+}
+
 // ── INVOICE PAGE ─────────────────────────────────────────
 let currentInvoiceJob = null;
-let invCounter = 1;
+let selectedJobRows   = new Set();
+let invDocCounter     = 1;
 
 function loadInvoicePage() {
   if (!currentUserEmail) return;
+  selectedJobRows.clear();
+  updateInvSelCount();
   apiGet('getJobs').then(function(data) {
-    if (data.status === 'ok') {
-      allJobs = data.rows || [];
-      filterInvoiceJobs();
-    }
-  }).catch(function() { toast('โหลดข้อมูลไม่สำเร็จ', true); });
+    if (data.status === 'ok') { allJobs = data.rows || []; filterInvoiceJobs(); }
+    else toast('โหลดข้อมูลไม่สำเร็จ', true);
+  }).catch(function() { toast('เชื่อมต่อไม่ได้', true); });
 }
 
 function filterInvoiceJobs() {
-  const q      = (document.getElementById('inv-search').value||'').trim().toLowerCase();
-  const status = document.getElementById('inv-status-filter').value;
-  const el     = document.getElementById('inv-jobs-body');
+  const q        = (document.getElementById('inv-search').value||'').trim().toLowerCase();
+  const custQ    = ((document.getElementById('inv-cust-search')||{}).value||'').trim().toLowerCase();
+  const plattype = (document.getElementById('inv-plattype').value||'');
+  const allChk   = document.querySelector('.inv-sc-all') && document.querySelector('.inv-sc-all').checked;
+  const checks   = allChk ? [] : Array.from(document.querySelectorAll('.inv-sc:checked')).map(function(cb){ return cb.value; });
+  const el       = document.getElementById('inv-jobs-body');
 
   const filtered = allJobs.filter(function(j) {
-    if (status && j.status !== status) return false;
-    if (q && !(String(j.jobId||'').toLowerCase().includes(q) ||
-               String(j.custName||'').toLowerCase().includes(q) ||
-               String(j.custCode||'').toLowerCase().includes(q))) return false;
+    if (!allChk && checks.length && !checks.includes(j.status)) return false;
+    if (q && !(String(j.jobId||'').toLowerCase().includes(q)||String(j.custName||'').toLowerCase().includes(q)||String(j.contact||'').toLowerCase().includes(q))) return false;
+    if (custQ && !(String(j.custCode||'').toLowerCase().includes(custQ)||String(j.custName||'').toLowerCase().includes(custQ))) return false;
+    if (plattype && j.platType !== plattype) return false;
     return true;
   });
 
@@ -1890,114 +1998,181 @@ function filterInvoiceJobs() {
   }
 
   el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:40px;text-align:center;"><input type="checkbox" id="inv-chk-all" onchange="toggleAllInvCheckbox(this)" style="width:auto;" /></th>'
     + '<th style="width:110px">Job ID</th>'
     + '<th style="width:90px">วันที่รับ</th>'
-    + '<th style="width:100px">วันที่ต้องการรับ</th>'
     + '<th style="width:90px">รหัสลูกค้า</th>'
-    + '<th style="width:160px">ชื่อสถานประกอบการ</th>'
-    + '<th style="width:180px">คำอธิบายชิ้นงาน</th>'
+    + '<th style="width:150px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:110px">ผู้ประสานงาน</th>'
+    + '<th style="width:170px">คำอธิบายชิ้นงาน</th>'
     + '<th style="width:100px">ประเภทชุบ</th>'
-    + '<th style="width:80px">ราคาสุทธิ</th>'
+    + '<th style="width:100px;text-align:right;">ราคาสุทธิ</th>'
     + '<th style="width:130px">สถานะ</th>'
-    + '<th style="width:90px">ออกบิล</th>'
     + '</tr></thead><tbody>'
     + filtered.map(function(j) {
-        const sc = STATUS_COLOR[j.status]||'';
+        const sc  = STATUS_COLOR[j.status]||'';
+        const chk = selectedJobRows.has(j.rowIndex) ? 'checked' : '';
         return '<tr>'
+          + '<td style="text-align:center;"><input type="checkbox" class="inv-row-chk" value="'+j.rowIndex+'" '+chk+' onchange="toggleInvRow('+j.rowIndex+')" style="width:auto;" /></td>'
           + '<td style="font-weight:600;color:var(--brand);">' + (j.jobId||'') + '</td>'
           + '<td>' + (j.dateIn||'—') + '</td>'
-          + '<td>' + (j.dateWant||'—') + '</td>'
           + '<td style="color:var(--brand);">' + (j.custCode||'—') + '</td>'
           + '<td>' + (j.custName||'—') + '</td>'
-          + '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;" title="'+( j.desc||'')+'">'+( j.desc||'—')+'</td>'
+          + '<td>' + (j.contact||'—') + '</td>'
+          + '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px;" title="'+(j.desc||'')+'">'+( j.desc||'—')+'</td>'
           + '<td>' + (j.platType||'—') + '</td>'
           + '<td style="text-align:right;font-weight:600;">' + (j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
           + '<td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;'+sc+'">' + (j.status||'—') + '</span></td>'
-          + '<td><button class="btn btn-sm btn-primary" onclick="openInvoice('+j.rowIndex+')">'
-          + '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ออกบิล</button></td>'
           + '</tr>';
       }).join('')
     + '</tbody></table>';
 }
 
-function openInvoice(rowIndex) {
-  const j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
-  if (!j) return;
-  currentInvoiceJob = j;
+function toggleInvRow(rowIndex) {
+  if (selectedJobRows.has(rowIndex)) selectedJobRows.delete(rowIndex);
+  else selectedJobRows.add(rowIndex);
+  updateInvSelCount();
+}
 
-  // generate invoice number
+function toggleAllInvCheckbox(cb) {
+  document.querySelectorAll('.inv-row-chk').forEach(function(el) {
+    el.checked = cb.checked;
+    const v = parseInt(el.value);
+    if (cb.checked) selectedJobRows.add(v);
+    else selectedJobRows.delete(v);
+  });
+  updateInvSelCount();
+}
+
+function updateInvSelCount() {
+  const n   = selectedJobRows.size;
+  const cel = document.getElementById('inv-selected-count');
+  const btn = document.getElementById('inv-build-btn');
+  if (cel) cel.textContent = 'เลือก ' + n + ' รายการ';
+  if (btn) { btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg> สร้างเอกสาร (' + n + ' รายการ)'; btn.disabled = n===0; btn.style.opacity = n===0?'.5':'1'; }
+}
+
+function openDocumentBuilder() {
+  if (selectedJobRows.size === 0) { toast('กรุณาเลือกรายการก่อน', true); return; }
+  document.getElementById('doc-modal-overlay').style.display = 'block';
+  document.getElementById('doc-modal').style.display        = 'block';
+  document.body.style.overflow = 'hidden';
+  renderDocPreview();
+}
+
+function closeDocBuilder() {
+  document.getElementById('doc-modal-overlay').style.display = 'none';
+  document.getElementById('doc-modal').style.display        = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderDocPreview() {
+  const jobs    = allJobs.filter(function(j){ return selectedJobRows.has(j.rowIndex); });
+  const docType = document.getElementById('doc-type').value;
+  const vatPct  = parseFloat(document.getElementById('doc-vat').value)||0;
+  const whtPct  = parseFloat(document.getElementById('doc-wht').value)||0;
+  const copies  = parseInt(document.getElementById('doc-copies').value)||1;
+  const remark  = document.getElementById('doc-remark').value;
+  const docNames= { invoice:'ใบแจ้งหนี้', delivery:'ใบส่งของ', billing:'ใบวางบิล', receipt:'ใบเสร็จรับเงิน', cashbill:'บิลเงินสด' };
+  const docName = docNames[docType]||'เอกสาร';
   const now = new Date();
-  const invNo = 'INV-' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(invCounter++).padStart(4,'0');
-  const dateStr = now.toLocaleDateString('th-TH', {year:'numeric',month:'long',day:'numeric'});
+  const thDate = now.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  const invNo = 'DOC-'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(invDocCounter).padStart(4,'0');
+  let subtotal = 0; jobs.forEach(function(j){ subtotal += j.total||0; });
+  const vatAmt  = subtotal * vatPct / 100;
+  const whtAmt  = subtotal * whtPct / 100;
+  const grand   = subtotal + vatAmt - whtAmt;
+  function fmt(n){ return '฿'+Number(n).toLocaleString('th-TH',{minimumFractionDigits:2}); }
+  const firstCust = jobs[0]||{};
 
-  document.getElementById('inv-number').textContent    = invNo;
-  document.getElementById('inv-date').textContent      = dateStr;
-  document.getElementById('inv-jobid').textContent     = j.jobId||'—';
-  document.getElementById('inv-to-name').textContent   = j.custName||'—';
-  document.getElementById('inv-to-contact').textContent= j.contact ? 'ผู้ประสานงาน: '+j.contact : '';
-  document.getElementById('inv-issued-by').textContent = currentUserEmail;
+  function buildDoc(copyLabel) {
+    let rows = ''; let seq = 1;
+    jobs.forEach(function(j) {
+      rows += '<tr style="border-bottom:1px solid #E2E8F0;vertical-align:top;">'
+        + '<td style="padding:8px 6px;text-align:center;color:#718096;">'+seq+'</td>'
+        + '<td style="padding:8px 6px;font-size:11px;color:#185FA5;white-space:nowrap;">'+( j.jobId||'')+'</td>'
+        + '<td style="padding:8px 6px;word-break:break-word;white-space:normal;">'+( j.desc||'—')+'<br/><span style="font-size:11px;color:#718096;">('+( j.platType||'')+' / สี:'+(j.color||'—')+')</span></td>'
+        + '<td style="padding:8px 6px;text-align:center;">'+( j.qty||'—')+'</td>'
+        + '<td style="padding:8px 6px;text-align:center;">'+( j.weight ? j.weight+' กก.' : '—')+'</td>'
+        + '<td style="padding:8px 6px;text-align:right;">'+( j.price ? fmt(j.price) : '—')+'</td>'
+        + '<td style="padding:8px 6px;text-align:right;font-weight:600;">'+( j.total ? fmt(j.total) : '—')+'</td>'
+        + '</tr>'; seq++;
+    });
+    return '<div style="background:#fff;padding:28px 32px;font-family:Sarabun,sans-serif;font-size:13px;line-height:1.6;position:relative;min-height:1050px;">'
+      + '<div style="position:absolute;top:12px;right:12px;font-size:11px;font-weight:600;color:#718096;border:1px solid #CBD5E1;padding:2px 10px;border-radius:4px;">'+copyLabel+'</div>'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #185FA5;">'
+        + '<div><div style="font-size:20px;font-weight:700;color:#185FA5;">'+docName+'</div>'
+          + (factoryData.name ? '<div style="font-weight:600;margin-top:2px;">'+factoryData.name+'</div>' : '')
+          + (factoryData.taxid ? '<div style="font-size:11px;color:#718096;">เลขผู้เสียภาษี: '+factoryData.taxid+(factoryData.branch?' ('+factoryData.branch+')':'')+'</div>' : '')
+          + (factoryData.addr  ? '<div style="font-size:11px;color:#718096;">'+factoryData.addr+'</div>' : '')
+          + (factoryData.tel   ? '<div style="font-size:11px;color:#718096;">โทร: '+factoryData.tel+(factoryData.fax?' โทรสาร: '+factoryData.fax:'')+'</div>' : '')
+        + '</div>'
+        + '<div style="text-align:right;"><div><span style="font-size:11px;color:#718096;">เลขที่: </span><b>'+invNo+'</b></div><div><span style="font-size:11px;color:#718096;">วันที่: </span>'+thDate+'</div></div>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">'
+        + '<div style="background:#F7F9FC;border-radius:6px;padding:10px 12px;">'
+          + '<div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;margin-bottom:4px;">ออกบิลถึง</div>'
+          + '<div style="font-weight:600;">'+( firstCust.custName||'—')+'</div>'
+          + (firstCust.custCode ? '<div style="font-size:11px;color:#718096;">รหัส: '+firstCust.custCode+'</div>' : '')
+          + (firstCust.contact  ? '<div style="font-size:11px;color:#718096;">ผู้ประสานงาน: '+firstCust.contact+'</div>' : '')
+        + '</div>'
+        + (factoryData.bankName ? '<div style="background:#F7F9FC;border-radius:6px;padding:10px 12px;font-size:11px;"><div style="font-weight:700;color:#718096;text-transform:uppercase;margin-bottom:4px;">ชำระเงินไปที่</div>'+factoryData.bankName+' สาขา'+factoryData.bankBranch+'<br/>ชื่อบัญชี: '+factoryData.bankAcctName+'<br/>เลขที่: '+factoryData.bankAcctNo+' ('+factoryData.bankType+')'+(factoryData.promptpay ? '<br/>PromptPay: '+factoryData.promptpay : '')+'</div>' : '<div></div>')
+      + '</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">'
+        + '<thead><tr style="background:#185FA5;color:#fff;">'
+          + '<th style="padding:8px 6px;width:35px;text-align:center;">ลำดับ</th>'
+          + '<th style="padding:8px 6px;width:90px;text-align:left;">Job ID</th>'
+          + '<th style="padding:8px 6px;text-align:left;">รายการ / คำอธิบายชิ้นงาน</th>'
+          + '<th style="padding:8px 6px;width:60px;text-align:center;">จำนวน</th>'
+          + '<th style="padding:8px 6px;width:75px;text-align:center;">น้ำหนัก</th>'
+          + '<th style="padding:8px 6px;width:95px;text-align:right;">ราคา/หน่วย</th>'
+          + '<th style="padding:8px 6px;width:105px;text-align:right;">จำนวนเงิน</th>'
+        + '</tr></thead><tbody>'+rows+'</tbody>'
+      + '</table>'
+      + '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">'
+        + '<div style="min-width:280px;font-size:12px;">'
+          + '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #E2E8F0;"><span style="color:#718096;">ยอดรวม</span><b>'+fmt(subtotal)+'</b></div>'
+          + (vatPct>0 ? '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #E2E8F0;"><span style="color:#718096;">VAT '+vatPct+'%</span><span>'+fmt(vatAmt)+'</span></div>' : '')
+          + (whtPct>0 ? '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #E2E8F0;"><span style="color:#718096;">หัก ณ ที่จ่าย '+whtPct+'%</span><span style="color:#A32D2D;">-'+fmt(whtAmt)+'</span></div>' : '')
+          + '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;font-weight:700;color:#185FA5;"><span>ยอดสุทธิ</span><span>'+fmt(grand)+'</span></div>'
+        + '</div>'
+      + '</div>'
+      + (remark ? '<div style="background:#FFFDE7;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:12px;"><b style="color:#718096;">หมายเหตุ: </b>'+remark+'</div>' : '')
+      + (factoryData.footerNote ? '<div style="font-size:11px;color:#718096;margin-bottom:12px;">'+factoryData.footerNote+'</div>' : '')
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:24px;padding-top:12px;border-top:1px solid #E2E8F0;">'
+        + '<div style="text-align:center;"><div style="border-top:1px solid #333;padding-top:6px;margin-top:48px;font-size:12px;color:#718096;">ผู้ออกเอกสาร</div><div style="font-size:11px;color:#A0AEC0;">'+currentUserEmail+'</div></div>'
+        + '<div style="text-align:center;"><div style="border-top:1px solid #333;padding-top:6px;margin-top:48px;font-size:12px;color:#718096;">ผู้รับเอกสาร</div><div style="font-size:11px;color:#A0AEC0;">วันที่: _______________</div></div>'
+      + '</div>'
+    + '</div>';
+  }
 
-  // items
-  const qty    = j.qty    || 0;
-  const weight = j.weight || 0;
-  const price  = j.price  || 0;
-  const total  = j.total  || (qty||weight) * price;
-  const qtyDisplay    = qty    ? qty+' ชิ้น' : '—';
-  const weightDisplay = weight ? weight+' กก.' : '—';
-
-  document.getElementById('inv-items').innerHTML =
-    '<tr style="border-bottom:1px solid var(--border);">'
-    + '<td style="padding:8px 10px;">' + (j.desc||'—') + '</td>'
-    + '<td style="padding:8px 10px;">' + (j.platType||'—') + '</td>'
-    + '<td style="padding:8px 10px;">' + (j.color||'—') + '</td>'
-    + '<td style="padding:8px 10px;text-align:right;">' + qtyDisplay + '</td>'
-    + '<td style="padding:8px 10px;text-align:right;">' + weightDisplay + '</td>'
-    + '<td style="padding:8px 10px;text-align:right;">' + (price ? '฿'+Number(price).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
-    + '<td style="padding:8px 10px;text-align:right;font-weight:600;">' + (total ? '฿'+Number(total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
-    + '</tr>';
-
-  document.getElementById('inv-subtotal-val') && (document.getElementById('inv-subtotal-val').dataset.base = total);
-  window._invBase = total;
-  calcInvoiceTotal();
-
-  document.getElementById('inv-preview-card').style.display = 'block';
-  document.getElementById('inv-preview-card').scrollIntoView({behavior:'smooth'});
+  const html = copies === 2
+    ? '<div style="border-bottom:2px dashed #CBD5E1;">'+buildDoc('ตัวจริง')+'</div>'+buildDoc('สำเนา')
+    : buildDoc('ตัวจริง / สำเนา');
+  document.getElementById('doc-preview-area').innerHTML = html;
 }
 
-function calcInvoiceTotal() {
-  const base    = window._invBase || 0;
-  const vatPct  = parseFloat(document.getElementById('inv-vat').value) || 0;
-  const vat     = base * vatPct / 100;
-  const total   = base + vat;
-  document.getElementById('inv-subtotal').textContent  = '฿'+base.toLocaleString('th-TH',{minimumFractionDigits:2});
-  document.getElementById('inv-vat-amount').textContent= '฿'+vat.toLocaleString('th-TH',{minimumFractionDigits:2});
-  document.getElementById('inv-total').textContent     = '฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2});
-}
-
-function printInvoice() {
-  const doc = document.getElementById('invoice-doc');
-  const w = window.open('','_blank','width=900,height=700');
-  w.document.write('<html><head><title>ใบแจ้งหนี้</title>'
-    + '<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">'
-    + '<style>body{font-family:Sarabun,sans-serif;padding:24px;font-size:13px;}</style>'
-    + '</head><body>' + doc.innerHTML + '</body></html>');
-  w.document.close();
-  w.focus();
-  setTimeout(function(){ w.print(); }, 600);
+function printDoc() {
+  const area = document.getElementById('doc-preview-area');
+  const docType = document.getElementById('doc-type').value;
+  const names = { invoice:'ใบแจ้งหนี้', delivery:'ใบส่งของ', billing:'ใบวางบิล', receipt:'ใบเสร็จรับเงิน', cashbill:'บิลเงินสด' };
+  const w = window.open('','_blank','width=1000,height=800');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(names[docType]||'เอกสาร')+'</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">'
+    + '<style>@page{size:A4;margin:10mm;}body{margin:0;font-family:Sarabun,sans-serif;}'
+    + '@media print{.no-print{display:none!important;}}'
+    + '</style></head><body>'+area.innerHTML+'</body></html>');
+  w.document.close(); w.focus();
+  setTimeout(function(){ w.print(); w.close(); invDocCounter++; }, 800);
 }
 
 async function saveInvoiceStatus() {
   if (!currentInvoiceJob) return;
   try {
-    const encoded = encodeURIComponent(JSON.stringify({ rowIndex: currentInvoiceJob.rowIndex, status: 'เครดิตเรียกเก็บเงิน' }));
-    const result  = await apiGet('updateJobStatus', 'data=' + encoded);
-    if (result.status === 'ok') {
-      toast('บันทึกสำเร็จ — เปลี่ยนสถานะเป็น เครดิตเรียกเก็บเงิน');
-      currentInvoiceJob.status = 'เครดิตเรียกเก็บเงิน';
-      loadInvoicePage();
-    } else {
-      toast('บันทึกไม่สำเร็จ: '+(result.message||''), true);
-    }
+    const enc = encodeURIComponent(JSON.stringify({ rowIndex: currentInvoiceJob.rowIndex, status: 'เครดิตเรียกเก็บเงิน' }));
+    const res = await apiGet('updateJobStatus', 'data='+enc);
+    if (res.status === 'ok') { toast('เปลี่ยนสถานะ → เครดิตเรียกเก็บเงิน'); currentInvoiceJob.status='เครดิตเรียกเก็บเงิน'; loadInvoicePage(); }
+    else toast('บันทึกไม่สำเร็จ', true);
   } catch(e) { toast('เกิดข้อผิดพลาด', true); }
 }
 
