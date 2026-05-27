@@ -749,7 +749,142 @@
           </div>
         </div>
       </div>
-      <div class="page" id="page-invoice"><div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="16" y1="13" x2="8" y2="13"/></svg><h3>ออกบิล / ใบแจ้งหนี้</h3><p>กำลังพัฒนา</p></div></div>
+      <div class="page" id="page-invoice">
+        <!-- Invoice List -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>เลือกงานเพื่อออกใบแจ้งหนี้
+              </div>
+              <div class="card-sub">เลือกงานที่ต้องการออกบิล (สถานะ: ชุบเสร็จแล้ว หรือ รอรับสินค้า)</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="inv-search" placeholder="ค้นหา Job ID / ลูกค้า..." oninput="filterInvoiceJobs()" style="font-size:12px;padding:6px 10px;width:200px;" />
+              <select id="inv-status-filter" onchange="filterInvoiceJobs()" style="font-size:12px;padding:6px 8px;">
+                <option value="">ทุกสถานะ</option>
+                <option value="ชุบเสร็จแล้ว" selected>ชุบเสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+                <option value="เครดิตเรียกเก็บเงิน">เครดิตเรียกเก็บเงิน</option>
+              </select>
+              <button class="btn btn-sm" onclick="loadInvoicePage()">
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>รีเฟรช
+              </button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="inv-jobs-body">
+            <div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>กำลังโหลด...</div>
+          </div>
+        </div>
+
+        <!-- Invoice Preview -->
+        <div class="card" id="inv-preview-card" style="display:none;">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>ตัวอย่างใบแจ้งหนี้
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn" onclick="printInvoice()">
+                <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>พิมพ์ / PDF
+              </button>
+              <button class="btn btn-primary" onclick="saveInvoiceStatus()">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>บันทึกและเปลี่ยนสถานะ → เครดิตเรียกเก็บเงิน
+              </button>
+            </div>
+          </div>
+
+          <!-- Invoice document -->
+          <div id="invoice-doc" style="max-width:800px;margin:0 auto;padding:32px;border:1px solid var(--border);border-radius:var(--r);background:#fff;font-size:13px;">
+            <!-- Header -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--brand);">
+              <div>
+                <div style="font-size:22px;font-weight:700;color:var(--brand);margin-bottom:4px;">ใบแจ้งหนี้</div>
+                <div style="font-size:11px;color:var(--text-3);">INVOICE</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:15px;font-weight:600;color:var(--text);" id="inv-company-name">ระบบโรงชุบ</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px;" id="inv-company-addr"></div>
+              </div>
+            </div>
+
+            <!-- Invoice meta -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:6px;">ออกบิลถึง</div>
+                <div style="font-size:14px;font-weight:600;" id="inv-to-name">—</div>
+                <div style="font-size:12px;color:var(--text-2);margin-top:2px;" id="inv-to-contact">—</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="margin-bottom:4px;"><span style="font-size:11px;color:var(--text-3);">เลขที่ใบแจ้งหนี้: </span><span style="font-weight:600;" id="inv-number">—</span></div>
+                <div style="margin-bottom:4px;"><span style="font-size:11px;color:var(--text-3);">วันที่ออก: </span><span id="inv-date">—</span></div>
+                <div><span style="font-size:11px;color:var(--text-3);">Job ID: </span><span style="color:var(--brand);font-weight:600;" id="inv-jobid">—</span></div>
+              </div>
+            </div>
+
+            <!-- Items table -->
+            <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px;">
+              <thead>
+                <tr style="background:var(--brand);color:#fff;">
+                  <th style="padding:8px 10px;text-align:left;">รายการ</th>
+                  <th style="padding:8px 10px;text-align:left;">ประเภทชุบ</th>
+                  <th style="padding:8px 10px;text-align:left;">สี</th>
+                  <th style="padding:8px 10px;text-align:right;">จำนวน</th>
+                  <th style="padding:8px 10px;text-align:right;">น้ำหนัก(กก.)</th>
+                  <th style="padding:8px 10px;text-align:right;">ราคาต่อหน่วย</th>
+                  <th style="padding:8px 10px;text-align:right;">จำนวนเงิน</th>
+                </tr>
+              </thead>
+              <tbody id="inv-items">
+                <tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-3);">—</td></tr>
+              </tbody>
+            </table>
+
+            <!-- Total -->
+            <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+              <div style="min-width:260px;">
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-2);">ยอดรวม</span>
+                  <span id="inv-subtotal" style="font-weight:600;">฿0.00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--text-2);">ภาษีมูลค่าเพิ่ม (VAT)</span>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <select id="inv-vat" onchange="calcInvoiceTotal()" style="font-size:12px;padding:3px 6px;width:80px;">
+                      <option value="0">ไม่มี VAT</option>
+                      <option value="7">7%</option>
+                      <option value="10">10%</option>
+                    </select>
+                    <span id="inv-vat-amount" style="min-width:60px;text-align:right;">฿0.00</span>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:16px;font-weight:700;color:var(--brand);">
+                  <span>ยอดสุทธิ</span>
+                  <span id="inv-total">฿0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Remark -->
+            <div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:16px;">
+              <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:6px;">หมายเหตุ / เงื่อนไขการชำระเงิน</div>
+              <textarea id="inv-remark" style="width:100%;min-height:48px;font-size:12px;border:none;background:transparent;resize:vertical;outline:none;font-family:inherit;"
+                placeholder="เช่น กรุณาชำระภายใน 30 วัน นับจากวันที่ออกบิล"></textarea>
+            </div>
+
+            <!-- Signature -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:32px;padding-top:16px;border-top:1px solid var(--border);">
+              <div style="text-align:center;">
+                <div style="border-top:1px solid #333;padding-top:8px;margin-top:40px;font-size:12px;color:var(--text-2);">ผู้ออกใบแจ้งหนี้</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:4px;" id="inv-issued-by"></div>
+              </div>
+              <div style="text-align:center;">
+                <div style="border-top:1px solid #333;padding-top:8px;margin-top:40px;font-size:12px;color:var(--text-2);">ผู้รับใบแจ้งหนี้</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:4px;">วันที่รับ: _______________</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="page" id="page-finance"><div class="coming-soon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h3>บันทึกรายรับ-รายจ่าย</h3><p>กำลังพัฒนา</p></div></div>
 
     </div>
@@ -767,7 +902,7 @@ let allCustomers = [];
 let allJobs = [];
 let cbCounter = 0;
 let jobSortKey = 'jobId';
-let jobSortAsc = true;
+let jobSortAsc = false;  // DESC = ล่าสุดก่อน
 
 const PAGE_TITLES = {
   dashboard:'Dashboard', customers:'ข้อมูลลูกค้า',
@@ -874,7 +1009,8 @@ function goPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'customers') loadCustomers();
   if (id === 'jobs') { loadJobs(); clearJobForm(); }
-  if (id === 'status') { loadStatusPage(); }
+  if (id === 'status')  { loadStatusPage(); }
+  if (id === 'invoice') { loadInvoicePage(); }
   if (id === 'dashboard') {
     const el2 = document.getElementById('dash-customers');
     if (el2) el2.textContent = allCustomers.length || '—';
@@ -1089,6 +1225,7 @@ async function loadJobs() {
     const data = await apiGet('getJobs');
     if (data.status === 'ok') {
       allJobs = data.rows || [];
+      applyJobSort();  // default sort: jobId DESC
       const el = document.getElementById('jobs-count');
       if (el) el.textContent = 'รายการงานทั้งหมด ' + allJobs.length + ' รายการ';
       renderJobsTable(allJobs);
@@ -1175,12 +1312,12 @@ function renderJobsTable(rows) {
     + '<th style="width:100px;'+thStyle+'" onclick="sortJobs(\'dateWant\')">วันที่ต้องการรับ '+sortIcon('dateWant')+'</th>'
     + '<th style="width:90px;'+thStyle+'" onclick="sortJobs(\'custCode\')">รหัสลูกค้า '+sortIcon('custCode')+'</th>'
     + '<th style="width:140px;'+thStyle+'" onclick="sortJobs(\'custName\')">ชื่อสถานประกอบการ '+sortIcon('custName')+'</th>'
-    + '<th style="width:160px;">ชิ้นงาน</th>'
+    + '<th style="width:160px;'+thStyle+'" onclick="sortJobs(\'desc\')">ชิ้นงาน '+sortIcon('desc')+'</th>'
     + '<th style="width:100px;'+thStyle+'" onclick="sortJobs(\'platType\')">ประเภทชุบ '+sortIcon('platType')+'</th>'
-    + '<th style="width:80px;">สี</th>'
+    + '<th style="width:80px;'+thStyle+'" onclick="sortJobs(\'color\')">สี '+sortIcon('color')+'</th>'
     + '<th style="width:65px;'+thStyle+'" onclick="sortJobs(\'qty\')">จำนวน '+sortIcon('qty')+'</th>'
     + '<th style="width:65px;'+thStyle+'" onclick="sortJobs(\'weight\')">น้ำหนัก '+sortIcon('weight')+'</th>'
-    + '<th style="width:145px;">สถานะงาน</th>'
+    + '<th style="width:145px;'+thStyle+'" onclick="sortJobs(\'status\')">สถานะงาน '+sortIcon('status')+'</th>'
     + '</tr></thead><tbody>'
     + rows.map(function(j) {
         const sc = STATUS_COLOR[j.status]||'';
@@ -1199,7 +1336,7 @@ function renderJobsTable(rows) {
           + '<td>' + (j.qty||'—') + '</td>'
           + '<td>' + (j.weight ? j.weight+' kg' : '—') + '</td>'
           + '<td onclick="event.stopPropagation()">'
-          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value)">'+opts+'</select>'
+          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value);applyStatusColor(this);">'+opts+'</select>'
           + '</td></tr>';
       }).join('')
     + '</tbody></table>';
@@ -1507,6 +1644,17 @@ function renderAllCustomers() {
   });
 
   const total   = filtered.length;
+  // apply status page sort
+  filtered.sort(function(a, b) {
+    const av = String(a[stSortKey]||'').toLowerCase();
+    const bv = String(b[stSortKey]||'').toLowerCase();
+    const an = parseFloat(a[stSortKey]);
+    const bn = parseFloat(b[stSortKey]);
+    if (!isNaN(an) && !isNaN(bn)) return stSortAsc ? an-bn : bn-an;
+    if (av < bv) return stSortAsc ? -1 : 1;
+    if (av > bv) return stSortAsc ? 1 : -1;
+    return 0;
+  });
   const showing = filtered.slice(0, pageSize);
   const countEl = document.getElementById('all-customer-count');
   if (countEl) countEl.textContent = (showing.length === total)
@@ -1623,16 +1771,18 @@ function renderStatusTable() {
     return;
   }
 
+  const stStyle = 'cursor:pointer;user-select:none;';
+  const stIcon  = function(k) { return stSortKey===k ? (stSortAsc?'↑':'↓') : '↕'; };
   el.innerHTML = '<table><thead><tr>'
-    + '<th style="width:110px">Job ID</th>'
-    + '<th style="width:90px">วันที่รับ</th>'
-    + '<th style="width:100px">วันที่ต้องการรับ</th>'
-    + '<th style="width:95px">รหัสลูกค้า</th>'
-    + '<th style="width:130px">ชื่อสถานประกอบการ</th>'
-    + '<th style="width:140px">คำอธิบายชิ้นงาน</th>'
-    + '<th style="width:100px">ประเภทชุบ</th>'
-    + '<th style="width:110px">ผู้รับงาน</th>'
-    + '<th style="width:150px">สถานะ</th>'
+    + '<th style="width:110px;'+stStyle+'" onclick="sortStatus(\'jobId\')">Job ID '+stIcon('jobId')+'</th>'
+    + '<th style="width:90px;'+stStyle+'" onclick="sortStatus(\'dateIn\')">วันที่รับ '+stIcon('dateIn')+'</th>'
+    + '<th style="width:100px;'+stStyle+'" onclick="sortStatus(\'dateWant\')">วันที่ต้องการรับ '+stIcon('dateWant')+'</th>'
+    + '<th style="width:95px;'+stStyle+'" onclick="sortStatus(\'custCode\')">รหัสลูกค้า '+stIcon('custCode')+'</th>'
+    + '<th style="width:130px;'+stStyle+'" onclick="sortStatus(\'custName\')">ชื่อสถานประกอบการ '+stIcon('custName')+'</th>'
+    + '<th style="width:140px;'+stStyle+'" onclick="sortStatus(\'desc\')">คำอธิบายชิ้นงาน '+stIcon('desc')+'</th>'
+    + '<th style="width:100px;'+stStyle+'" onclick="sortStatus(\'platType\')">ประเภทชุบ '+stIcon('platType')+'</th>'
+    + '<th style="width:110px;'+stStyle+'" onclick="sortStatus(\'receivedBy\')">ผู้รับงาน '+stIcon('receivedBy')+'</th>'
+    + '<th style="width:150px;'+stStyle+'" onclick="sortStatus(\'status\')">สถานะ '+stIcon('status')+'</th>'
     + '</tr></thead><tbody>'
     + showing.map(function(j) {
         const sc   = STATUS_COLOR[j.status]||'';
@@ -1652,7 +1802,7 @@ function renderStatusTable() {
           + '<td>' + (j.platType||'—') + '</td>'
           + '<td style="font-size:11px;color:var(--text-2);">' + (j.receivedBy||'—') + '</td>'
           + '<td onclick="event.stopPropagation()">'
-          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value);updateStatusSummary();">'+opts+'</select>'
+          + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value);updateStatusSummary();applyStatusColor(this);">'+opts+'</select>'
           + '</td></tr>';
       }).join('')
     + '</tbody></table>';
@@ -1660,24 +1810,39 @@ function renderStatusTable() {
 
 // ── SORT JOBS ────────────────────────────────────────────
 function sortJobs(key) {
-  if (jobSortKey === key) {
-    jobSortAsc = !jobSortAsc;
-  } else {
-    jobSortKey = key;
-    jobSortAsc = true;
-  }
+  if (jobSortKey === key) { jobSortAsc = !jobSortAsc; }
+  else { jobSortKey = key; jobSortAsc = (key !== 'jobId'); }
+  applyJobSort();
+  filterJobs();
+}
+
+function applyJobSort() {
   allJobs.sort(function(a, b) {
-    const av = String(a[key]||'').toLowerCase();
-    const bv = String(b[key]||'').toLowerCase();
-    // ตัวเลข sort ด้วยค่าตัวเลข
-    const an = parseFloat(a[key]);
-    const bn = parseFloat(b[key]);
+    const av = String(a[jobSortKey]||'').toLowerCase();
+    const bv = String(b[jobSortKey]||'').toLowerCase();
+    const an = parseFloat(a[jobSortKey]);
+    const bn = parseFloat(b[jobSortKey]);
     if (!isNaN(an) && !isNaN(bn)) return jobSortAsc ? an-bn : bn-an;
     if (av < bv) return jobSortAsc ? -1 : 1;
     if (av > bv) return jobSortAsc ? 1 : -1;
     return 0;
   });
-  filterJobs();
+}
+
+// ── SORT STATUS PAGE ──────────────────────────────────────
+let stSortKey = 'jobId';
+let stSortAsc = false;  // DESC = ล่าสุดก่อน
+
+function sortStatus(key) {
+  if (stSortKey === key) { stSortAsc = !stSortAsc; }
+  else { stSortKey = key; stSortAsc = (key !== 'jobId'); }
+  renderStatusTable();
+}
+
+// ── REAL-TIME STATUS COLOR ────────────────────────────────
+function applyStatusColor(sel) {
+  const sc = STATUS_COLOR[sel.value] || 'background:#fff;color:#333;';
+  sel.style.cssText = 'font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;' + sc;
 }
 
 // ── CLEAR STATUS FILTER ───────────────────────────────────
@@ -1690,6 +1855,150 @@ function clearStatusFilter() {
   if (sf) sf.value = '';
   if (pt) pt.value = '';
   renderStatusTable();
+}
+
+// ── INVOICE PAGE ─────────────────────────────────────────
+let currentInvoiceJob = null;
+let invCounter = 1;
+
+function loadInvoicePage() {
+  if (!currentUserEmail) return;
+  apiGet('getJobs').then(function(data) {
+    if (data.status === 'ok') {
+      allJobs = data.rows || [];
+      filterInvoiceJobs();
+    }
+  }).catch(function() { toast('โหลดข้อมูลไม่สำเร็จ', true); });
+}
+
+function filterInvoiceJobs() {
+  const q      = (document.getElementById('inv-search').value||'').trim().toLowerCase();
+  const status = document.getElementById('inv-status-filter').value;
+  const el     = document.getElementById('inv-jobs-body');
+
+  const filtered = allJobs.filter(function(j) {
+    if (status && j.status !== status) return false;
+    if (q && !(String(j.jobId||'').toLowerCase().includes(q) ||
+               String(j.custName||'').toLowerCase().includes(q) ||
+               String(j.custCode||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ไม่พบรายการ</div>';
+    return;
+  }
+
+  el.innerHTML = '<table><thead><tr>'
+    + '<th style="width:110px">Job ID</th>'
+    + '<th style="width:90px">วันที่รับ</th>'
+    + '<th style="width:100px">วันที่ต้องการรับ</th>'
+    + '<th style="width:90px">รหัสลูกค้า</th>'
+    + '<th style="width:160px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:180px">คำอธิบายชิ้นงาน</th>'
+    + '<th style="width:100px">ประเภทชุบ</th>'
+    + '<th style="width:80px">ราคาสุทธิ</th>'
+    + '<th style="width:130px">สถานะ</th>'
+    + '<th style="width:90px">ออกบิล</th>'
+    + '</tr></thead><tbody>'
+    + filtered.map(function(j) {
+        const sc = STATUS_COLOR[j.status]||'';
+        return '<tr>'
+          + '<td style="font-weight:600;color:var(--brand);">' + (j.jobId||'') + '</td>'
+          + '<td>' + (j.dateIn||'—') + '</td>'
+          + '<td>' + (j.dateWant||'—') + '</td>'
+          + '<td style="color:var(--brand);">' + (j.custCode||'—') + '</td>'
+          + '<td>' + (j.custName||'—') + '</td>'
+          + '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;" title="'+( j.desc||'')+'">'+( j.desc||'—')+'</td>'
+          + '<td>' + (j.platType||'—') + '</td>'
+          + '<td style="text-align:right;font-weight:600;">' + (j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
+          + '<td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;'+sc+'">' + (j.status||'—') + '</span></td>'
+          + '<td><button class="btn btn-sm btn-primary" onclick="openInvoice('+j.rowIndex+')">'
+          + '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ออกบิล</button></td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+function openInvoice(rowIndex) {
+  const j = allJobs.find(function(x){ return x.rowIndex === rowIndex; });
+  if (!j) return;
+  currentInvoiceJob = j;
+
+  // generate invoice number
+  const now = new Date();
+  const invNo = 'INV-' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(invCounter++).padStart(4,'0');
+  const dateStr = now.toLocaleDateString('th-TH', {year:'numeric',month:'long',day:'numeric'});
+
+  document.getElementById('inv-number').textContent    = invNo;
+  document.getElementById('inv-date').textContent      = dateStr;
+  document.getElementById('inv-jobid').textContent     = j.jobId||'—';
+  document.getElementById('inv-to-name').textContent   = j.custName||'—';
+  document.getElementById('inv-to-contact').textContent= j.contact ? 'ผู้ประสานงาน: '+j.contact : '';
+  document.getElementById('inv-issued-by').textContent = currentUserEmail;
+
+  // items
+  const qty    = j.qty    || 0;
+  const weight = j.weight || 0;
+  const price  = j.price  || 0;
+  const total  = j.total  || (qty||weight) * price;
+  const qtyDisplay    = qty    ? qty+' ชิ้น' : '—';
+  const weightDisplay = weight ? weight+' กก.' : '—';
+
+  document.getElementById('inv-items').innerHTML =
+    '<tr style="border-bottom:1px solid var(--border);">'
+    + '<td style="padding:8px 10px;">' + (j.desc||'—') + '</td>'
+    + '<td style="padding:8px 10px;">' + (j.platType||'—') + '</td>'
+    + '<td style="padding:8px 10px;">' + (j.color||'—') + '</td>'
+    + '<td style="padding:8px 10px;text-align:right;">' + qtyDisplay + '</td>'
+    + '<td style="padding:8px 10px;text-align:right;">' + weightDisplay + '</td>'
+    + '<td style="padding:8px 10px;text-align:right;">' + (price ? '฿'+Number(price).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
+    + '<td style="padding:8px 10px;text-align:right;font-weight:600;">' + (total ? '฿'+Number(total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—') + '</td>'
+    + '</tr>';
+
+  document.getElementById('inv-subtotal-val') && (document.getElementById('inv-subtotal-val').dataset.base = total);
+  window._invBase = total;
+  calcInvoiceTotal();
+
+  document.getElementById('inv-preview-card').style.display = 'block';
+  document.getElementById('inv-preview-card').scrollIntoView({behavior:'smooth'});
+}
+
+function calcInvoiceTotal() {
+  const base    = window._invBase || 0;
+  const vatPct  = parseFloat(document.getElementById('inv-vat').value) || 0;
+  const vat     = base * vatPct / 100;
+  const total   = base + vat;
+  document.getElementById('inv-subtotal').textContent  = '฿'+base.toLocaleString('th-TH',{minimumFractionDigits:2});
+  document.getElementById('inv-vat-amount').textContent= '฿'+vat.toLocaleString('th-TH',{minimumFractionDigits:2});
+  document.getElementById('inv-total').textContent     = '฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2});
+}
+
+function printInvoice() {
+  const doc = document.getElementById('invoice-doc');
+  const w = window.open('','_blank','width=900,height=700');
+  w.document.write('<html><head><title>ใบแจ้งหนี้</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">'
+    + '<style>body{font-family:Sarabun,sans-serif;padding:24px;font-size:13px;}</style>'
+    + '</head><body>' + doc.innerHTML + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 600);
+}
+
+async function saveInvoiceStatus() {
+  if (!currentInvoiceJob) return;
+  try {
+    const encoded = encodeURIComponent(JSON.stringify({ rowIndex: currentInvoiceJob.rowIndex, status: 'เครดิตเรียกเก็บเงิน' }));
+    const result  = await apiGet('updateJobStatus', 'data=' + encoded);
+    if (result.status === 'ok') {
+      toast('บันทึกสำเร็จ — เปลี่ยนสถานะเป็น เครดิตเรียกเก็บเงิน');
+      currentInvoiceJob.status = 'เครดิตเรียกเก็บเงิน';
+      loadInvoicePage();
+    } else {
+      toast('บันทึกไม่สำเร็จ: '+(result.message||''), true);
+    }
+  } catch(e) { toast('เกิดข้อผิดพลาด', true); }
 }
 
 // ── GOOGLE SIGN-IN (popup mode — ไม่รบกวน JSONP) ─────────
