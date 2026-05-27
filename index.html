@@ -324,14 +324,33 @@
               <div style="font-size:11px;color:var(--text-3);">รายการ</div>
             </div>
           </div>
-          <div style="margin-bottom:8px;display:flex;gap:8px;">
-            <input type="text" id="all-cust-search" placeholder="กรองรายการ..." oninput="renderAllCustomers()"
-              style="flex:1;font-size:12px;padding:6px 10px;" />
-            <select id="all-cust-paytype" onchange="renderAllCustomers()" style="font-size:12px;padding:6px 8px;">
-              <option value="">ทุกประเภทชำระ</option>
-              <option value="เครดิต">เครดิต</option>
-              <option value="เงินสด / โอน">เงินสด / โอน</option>
-            </select>
+          <!-- Filter bar ลูกค้า -->
+          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">ค้นหา</div>
+              <input type="text" id="all-cust-search" placeholder="รหัส / ชื่อ / ผู้ประสานงาน / เบอร์..."
+                oninput="renderAllCustomers()" style="width:100%;font-size:12px;" />
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">ประเภทชำระ</div>
+              <select id="all-cust-paytype" onchange="renderAllCustomers()" style="width:100%;font-size:12px;padding:7px 8px;">
+                <option value="">ทุกประเภท</option>
+                <option value="เครดิต">เครดิต</option>
+                <option value="เงินสด / โอน">เงินสด / โอน</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">ผู้ประสานงาน</div>
+              <input type="text" id="all-cust-contact" placeholder="ค้นหาผู้ประสานงาน..."
+                oninput="renderAllCustomers()" style="width:100%;font-size:12px;" />
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">วันที่เริ่มบิล</div>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="all-cust-bill-from" oninput="renderAllCustomers()" style="flex:1;font-size:11px;" title="ตั้งแต่" />
+                <input type="date" id="all-cust-bill-to"   oninput="renderAllCustomers()" style="flex:1;font-size:11px;" title="ถึง" />
+              </div>
+            </div>
           </div>
           <div class="tbl-wrap" id="all-customers-body">
             <div class="empty"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>กำลังโหลด...</div>
@@ -375,7 +394,7 @@
               </div>
               <div class="card-sub" id="jobs-count">กำลังโหลด...</div>
             </div>
-<div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
               <div style="font-size:11px;color:var(--text-3);">แสดง</div>
               <select id="page-size" onchange="renderJobsTable(allJobs)" style="font-size:12px;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--bg);">
                 <option value="10">10</option>
@@ -619,7 +638,12 @@
       </div>
       <div class="page" id="page-status">
         <!-- Summary Cards -->
-        <div class="stats-grid">
+        <div class="stats-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #185FA5;" onclick="filterStatusPage('')">
+            <div class="stat-label">งานทั้งหมด</div>
+            <div class="stat-value" id="st-all" style="color:#185FA5;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
           <div class="stat-card" style="cursor:pointer;border-left:4px solid #856404;" onclick="filterStatusPage('รอดำเนินการ')">
             <div class="stat-label">รอดำเนินการ</div>
             <div class="stat-value" id="st-pending" style="color:#856404;">—</div>
@@ -1161,6 +1185,12 @@ function openJobDetail(rowIndex) {
     + detailBox('ชื่อสถานประกอบการ',j.custName||'—')
     + detailBox('ชื่อผู้ประสานงาน',j.contact||'—')
     + '</div></div>'
+    + '<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:8px;">ข้อมูลการรับงาน</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+    + detailBox('ผู้รับงาน','<span style="color:var(--brand);">'+(j.receivedBy||'—')+'</span>')
+    + detailBox('วันที่บันทึก',j.dateIn||'—')
+    + '</div></div>'
     + '<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">'
     + '<div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;">รายละเอียดชิ้นงาน</div>'
     + '<div style="background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.7;">'+(j.desc||'—')+'</div>'
@@ -1310,6 +1340,8 @@ async function saveJob() {
     price: priceVal, total: amount*priceVal,
     status: document.getElementById('j-status').value,
     note: document.getElementById('j-note').value,
+    // ผู้รับงาน = email ผู้ที่ login อยู่ (บันทึกอัตโนมัติ ไม่ต้องกรอก)
+    receivedBy: currentUserEmail,
   };
   setOv('ov-job-form', true);
   try {
@@ -1391,8 +1423,12 @@ document.addEventListener('click', function(e) {
 // ── ALL CUSTOMERS LIST ───────────────────────────────────
 function renderAllCustomers() {
   const el       = document.getElementById('all-customers-body');
+  if (!el) return;
   const q        = (document.getElementById('all-cust-search').value||'').trim().toLowerCase();
   const paytype  = document.getElementById('all-cust-paytype').value;
+  const contact  = (document.getElementById('all-cust-contact').value||'').trim().toLowerCase();
+  const billFrom = (document.getElementById('all-cust-bill-from')||{}).value||'';
+  const billTo   = (document.getElementById('all-cust-bill-to')||{}).value||'';
   const pageSize = parseInt(document.getElementById('cust-page-size').value)||30;
 
   let filtered = allCustomers.filter(function(c) {
@@ -1400,9 +1436,13 @@ function renderAllCustomers() {
       String(c.code||'').toLowerCase().includes(q) ||
       String(c.name||'').toLowerCase().includes(q) ||
       String(c.contact||'').toLowerCase().includes(q) ||
-      String(c.tel||'').toLowerCase().includes(q)
+      String(c.tel||'').toLowerCase().includes(q) ||
+      String(c.biztel||'').toLowerCase().includes(q)
     )) return false;
-    if (paytype && c.paytype !== paytype) return false;
+    if (paytype  && c.paytype !== paytype) return false;
+    if (contact  && !String(c.contact||'').toLowerCase().includes(contact)) return false;
+    if (billFrom && c.billstart && c.billstart < billFrom) return false;
+    if (billTo   && c.billstart && c.billstart > billTo)   return false;
     return true;
   });
 
@@ -1468,6 +1508,8 @@ function loadStatusPage() {
 function updateStatusSummary() {
   const counts = { 'รอดำเนินการ':0, 'กำลังชุบ':0, 'เสร็จแล้ว':0, 'รอรับสินค้า':0 };
   allJobs.forEach(function(j) { if (counts[j.status] !== undefined) counts[j.status]++; });
+  const allEl = document.getElementById('st-all');
+  if (allEl) allEl.textContent = allJobs.length;
   document.getElementById('st-pending').textContent = counts['รอดำเนินการ'];
   document.getElementById('st-plating').textContent = counts['กำลังชุบ'];
   document.getElementById('st-done').textContent    = counts['เสร็จแล้ว'];
@@ -1508,9 +1550,10 @@ function renderStatusTable() {
     + '<th style="width:90px">วันที่รับ</th>'
     + '<th style="width:100px">วันที่ต้องการรับ</th>'
     + '<th style="width:95px">รหัสลูกค้า</th>'
-    + '<th style="width:145px">ชื่อสถานประกอบการ</th>'
-    + '<th style="width:160px">คำอธิบายชิ้นงาน</th>'
+    + '<th style="width:130px">ชื่อสถานประกอบการ</th>'
+    + '<th style="width:140px">คำอธิบายชิ้นงาน</th>'
     + '<th style="width:100px">ประเภทชุบ</th>'
+    + '<th style="width:110px">ผู้รับงาน</th>'
     + '<th style="width:150px">สถานะ</th>'
     + '</tr></thead><tbody>'
     + filtered.map(function(j) {
@@ -1521,7 +1564,7 @@ function renderStatusTable() {
         // เน้น overdue (ต้องการรับแล้วแต่ยังไม่เสร็จ)
         const overdue = j.dateWant && j.dateWant < new Date().toISOString().split('T')[0]
           && j.status !== 'เสร็จแล้ว' && j.status !== 'รอรับสินค้า';
-        return '<tr style="'+(overdue?'background:#FFF5F5;':'')+'">'
+        return '<tr style="'+(overdue?'background:#FFF5F5;':'')+';cursor:pointer;" onclick="openJobDetail('+j.rowIndex+')">'
           + '<td style="font-weight:600;color:var(--brand);">' + (j.jobId||'') + (overdue ? ' <span style="color:#A32D2D;font-size:10px;">⚠ เกิน</span>' : '') + '</td>'
           + '<td>' + (j.dateIn||'—') + '</td>'
           + '<td style="'+(overdue?'color:#A32D2D;font-weight:600;':'')+ '">' + (j.dateWant||'—') + '</td>'
@@ -1529,6 +1572,7 @@ function renderStatusTable() {
           + '<td title="' + (j.custName||'') + '">' + (j.custName||'—') + '</td>'
           + '<td title="' + (j.desc||'') + '" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">' + (j.desc||'—') + '</td>'
           + '<td>' + (j.platType||'—') + '</td>'
+          + '<td style="font-size:11px;color:var(--text-2);">' + (j.receivedBy||'—') + '</td>'
           + '<td onclick="event.stopPropagation()">'
           + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value);updateStatusSummary();">'+opts+'</select>'
           + '</td></tr>';
