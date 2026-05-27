@@ -1376,14 +1376,21 @@ async function saveCustomer() {
   if (!paytype)   { document.getElementById('f-paytype').classList.add('field-error');   hasError=true; }
   if (hasError) { toast('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', true); return; }
   const dataObj = {
-    code: document.getElementById('f-code').value.trim(), name, addr, biztel, contact, tel,
-    billstart, billdate: document.getElementById('f-billdate').value,
-    billname: document.getElementById('f-billname').value, paytype,
-    creditdays: paytype === 'เครดิต' ? document.getElementById('f-creditdays').value : '',
-    taxid:   (document.getElementById('f-taxid')  ||{value:''}).value.trim(),
-    branch:  (document.getElementById('f-branch') ||{value:''}).value.trim(),
-    website: (document.getElementById('f-website')||{value:''}).value.trim(),
-    mode: document.getElementById('f-mode').value,
+    code:       document.getElementById('f-code').value.trim(),
+    name,
+    addr,
+    biztel,
+    contact,
+    tel,
+    billstart,
+    billname:   document.getElementById('f-billname').value.trim(),
+    paytype,
+    creditdays: paytype === 'เครดิต' ? (document.getElementById('f-creditdays').value||'') : '',
+    taxid:      (document.getElementById('f-taxid')  ||{value:''}).value.trim(),
+    branch:     (document.getElementById('f-branch') ||{value:''}).value.trim(),
+    billdate:   paytype === 'เครดิต' ? (document.getElementById('f-billdate').value||'') : '',
+    website:    (document.getElementById('f-website')||{value:''}).value.trim(),
+    mode:       document.getElementById('f-mode').value,
     searchName: document.getElementById('f-original-name').value || name,
   };
   setOv('ov-form', true);
