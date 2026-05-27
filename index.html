@@ -735,7 +735,7 @@
                 <option value="9999">ทั้งหมด</option>
               </select>
               <div style="font-size:11px;color:var(--text-3);">รายการ</div>
-              <button class="btn btn-sm" onclick="loadStatusPage()">
+              <button class="btn btn-sm" onclick="forceReloadStatusPage()">
                 <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>รีเฟรช
               </button>
             </div>
@@ -1054,21 +1054,41 @@ const PAGE_TITLES = {
 function apiGet(action, extraParams) {
   return new Promise(function(resolve, reject) {
     const cbName = '_cb' + (++cbCounter);
-    const timer  = setTimeout(function() { cleanup(); reject(new Error('timeout')); }, 20000);
-    window[cbName] = function(data) { cleanup(); resolve(data); };
+    let done = false;  // ป้องกัน onerror fire หลัง callback สำเร็จ
+    const timer = setTimeout(function() {
+      if (!done) { done=true; cleanup(); reject(new Error('timeout')); }
+    }, 25000);
+    window[cbName] = function(data) {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve(data);
+    };
     function cleanup() {
       clearTimeout(timer);
       delete window[cbName];
       const s = document.getElementById('jsonp_'+cbName);
-      if (s) s.parentNode.removeChild(s);
+      if (s) { try { s.parentNode.removeChild(s); } catch(e) {} }
     }
     let url = API + '?action=' + action + '&callback=' + cbName;
     if (currentUserEmail) url += '&email=' + encodeURIComponent(currentUserEmail);
     if (extraParams) url += '&' + extraParams;
     const script = document.createElement('script');
-    script.id = 'jsonp_' + cbName;
-    script.onerror = function() { cleanup(); reject(new Error('network error')); };
-    script.src = url;
+    script.id  = 'jsonp_' + cbName;
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    // onerror: ถ้า callback ยังไม่ถูกเรียก ถึงจะ reject
+    script.onerror = function() {
+      if (!done) { done=true; cleanup(); reject(new Error('script load error')); }
+    };
+    // onload: ถ้า load สำเร็จแต่ callback ยังไม่ถูกเรียกใน 3 วินาที = error
+    script.onload = function() {
+      if (!done) {
+        setTimeout(function() {
+          if (!done) { done=true; cleanup(); reject(new Error('callback not fired')); }
+        }, 3000);
+      }
+    };
     document.head.appendChild(script);
   });
 }
@@ -1154,7 +1174,28 @@ function goPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'customers') loadCustomers();
   if (id === 'jobs') { loadJobs(); clearJobForm(); }
-  if (id === 'status')  { loadStatusPage(); }
+  if (id === 'status') {
+    if (allJobs.length === 0) {
+      // โหลด jobs ก่อน แล้ว render status
+      setOv('ov-status', true);
+      apiGet('getJobs').then(function(data) {
+        setOv('ov-status', false);
+        if (data.status === 'ok') {
+          allJobs = data.rows || [];
+          updateStatusSummary();
+          renderStatusTable();
+        } else {
+          toast('โหลดไม่สำเร็จ: '+(data.message||''), true);
+        }
+      }).catch(function(e) {
+        setOv('ov-status', false);
+        toast('เชื่อมต่อไม่ได้ กด รีเฟรช อีกครั้ง', true);
+      });
+    } else {
+      updateStatusSummary();
+      renderStatusTable();
+    }
+  }
   if (id === 'invoice') {
     // ไม่ auto-load เพื่อประสิทธิภาพ — แสดงปุ่มให้กดโหลดเอง
     const b = document.getElementById('inv-jobs-body');
@@ -1911,6 +1952,25 @@ function loadStatusPage() {
     const msg = e && e.message === 'timeout' ? 'Apps Script ใช้เวลานาน — กด รีเฟรช อีกครั้ง' : 'เชื่อมต่อไม่ได้ — ตรวจสอบ Deploy';
     toast(msg, true);
     if (allJobs.length > 0) { updateStatusSummary(); renderStatusTable(); }
+  });
+}
+
+function forceReloadStatusPage() {
+  if (!currentUserEmail) return;
+  setOv('ov-status', true);
+  apiGet('getJobs').then(function(data) {
+    setOv('ov-status', false);
+    if (data.status === 'ok') {
+      allJobs = data.rows || [];
+      updateStatusSummary();
+      renderStatusTable();
+      toast('โหลดข้อมูลสำเร็จ');
+    } else {
+      toast('โหลดไม่สำเร็จ: '+(data.message||data.status), true);
+    }
+  }).catch(function(e) {
+    setOv('ov-status', false);
+    toast('เชื่อมต่อไม่ได้: '+e.message, true);
   });
 }
 
