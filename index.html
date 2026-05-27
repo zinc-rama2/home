@@ -1054,7 +1054,7 @@ const PAGE_TITLES = {
 function apiGet(action, extraParams) {
   return new Promise(function(resolve, reject) {
     const cbName = '_cb' + (++cbCounter);
-    let done = false;  // ป้องกัน onerror fire หลัง callback สำเร็จ
+    let done = false;
     const timer = setTimeout(function() {
       if (!done) { done=true; cleanup(); reject(new Error('timeout')); }
     }, 25000);
@@ -1068,28 +1068,20 @@ function apiGet(action, extraParams) {
       clearTimeout(timer);
       delete window[cbName];
       const s = document.getElementById('jsonp_'+cbName);
-      if (s) { try { s.parentNode.removeChild(s); } catch(e) {} }
+      if (s) { try { s.parentNode.removeChild(s); } catch(e2) {} }
     }
     let url = API + '?action=' + action + '&callback=' + cbName;
     if (currentUserEmail) url += '&email=' + encodeURIComponent(currentUserEmail);
     if (extraParams) url += '&' + extraParams;
     const script = document.createElement('script');
-    script.id  = 'jsonp_' + cbName;
+    script.id    = 'jsonp_' + cbName;
     script.async = true;
-    script.crossOrigin = 'anonymous';
-    // onerror: ถ้า callback ยังไม่ถูกเรียก ถึงจะ reject
+    // ไม่ใช้ crossOrigin — JSONP ไม่ต้องการ และจะถูก block
     script.onerror = function() {
       if (!done) { done=true; cleanup(); reject(new Error('script load error')); }
     };
-    // onload: ถ้า load สำเร็จแต่ callback ยังไม่ถูกเรียกใน 3 วินาที = error
-    script.onload = function() {
-      if (!done) {
-        setTimeout(function() {
-          if (!done) { done=true; cleanup(); reject(new Error('callback not fired')); }
-        }, 3000);
-      }
-    };
     document.head.appendChild(script);
+    script.src = url; // set src หลัง append เพื่อให้ onerror ทำงานถูกต้อง
   });
 }
 
