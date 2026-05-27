@@ -1106,6 +1106,11 @@ function verifyEmail(email) {
   document.getElementById('perm-msg').textContent = 'กำลังตรวจสอบสิทธิ์...';
   apiGet('checkPermission', 'email=' + encodeURIComponent(email))
     .then(function(result) {
+      if (result.status === 'error') {
+        document.getElementById('perm-msg').textContent = 'Apps Script error: ' + (result.message||'ไม่ทราบสาเหตุ');
+        document.getElementById('perm-email-wrap') && (document.getElementById('perm-email-wrap').style.display='flex');
+        return;
+      }
       if (result.allowed) {
         currentUserEmail = email;
         document.getElementById('permission-gate').style.display = 'none';
@@ -1301,7 +1306,6 @@ function fillCustomerForm(c) {
   document.getElementById('f-contact').value    = c.contact   || '';
   document.getElementById('f-tel').value        = c.tel       || '';
   document.getElementById('f-paytype').value    = c.paytype   || '';
-  document.getElementById('f-billdate').value   = c.billdate  || '';
   document.getElementById('f-creditdays').value = c.creditdays|| '';
   document.getElementById('f-billname').value   = c.billname  || '';
   document.getElementById('f-billstart').value  = c.billstart || '';
@@ -1897,7 +1901,8 @@ function loadStatusPage() {
     setOv('ov-status', false);
   }).catch(function(e) {
     setOv('ov-status', false);
-    toast('เชื่อมต่อ Apps Script ไม่ได้ — กด รีเฟรช อีกครั้ง', true);
+    const msg = e && e.message === 'timeout' ? 'Apps Script ใช้เวลานาน — กด รีเฟรช อีกครั้ง' : 'เชื่อมต่อไม่ได้ — ตรวจสอบ Deploy';
+    toast(msg, true);
     if (allJobs.length > 0) { updateStatusSummary(); renderStatusTable(); }
   });
 }
