@@ -237,7 +237,7 @@
 
       <!-- CUSTOMERS -->
       <div class="page active" id="page-customers">
-        <div class="card">
+        <div class="card" style="position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.08);">
           <div class="ov" id="ov-search"><span class="spin">↻</span> กำลังโหลด...</div>
           <div class="card-head">
             <div>
@@ -397,12 +397,13 @@
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="font-size:11px;color:var(--text-3);">แสดง</div>
               <select id="page-size" onchange="renderJobsTable(allJobs)" style="font-size:12px;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--bg);">
+                <option value="5" selected>5</option>
                 <option value="10">10</option>
                 <option value="30">30</option>
                 <option value="50">50</option>
                 <option value="80">80</option>
                 <option value="100">100</option>
-                <option value="9999" selected>ทั้งหมด</option>
+                <option value="9999">ทั้งหมด</option>
               </select>
               <div style="font-size:11px;color:var(--text-3);">รายการ</div>
               <button class="btn btn-sm" onclick="loadJobs()">
@@ -490,11 +491,13 @@
             <div>
               <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">สถานะงาน</div>
               <select id="filter-status" onchange="filterJobs()" style="width:100%;font-size:12px;padding:7px 8px;">
-                <option value="">ทุกสถานะ</option>
+  <option value="">ทุกสถานะ</option>
                 <option value="รอดำเนินการ">รอดำเนินการ</option>
                 <option value="กำลังชุบ">กำลังชุบ</option>
-                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="ชุบเสร็จแล้ว">ชุบเสร็จแล้ว</option>
                 <option value="รอรับสินค้า">รอรับสินค้า</option>
+                <option value="เครดิตเรียกเก็บเงิน">เครดิตเรียกเก็บเงิน</option>
+                <option value="ชำระเงินเรียบร้อย">ชำระเงินเรียบร้อย</option>
               </select>
             </div>
             <button class="btn btn-sm" onclick="clearJobFilter()" style="margin-top:18px;">
@@ -530,8 +533,10 @@
               <select id="j-status">
                 <option value="รอดำเนินการ">รอดำเนินการ</option>
                 <option value="กำลังชุบ">กำลังชุบ</option>
-                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="ชุบเสร็จแล้ว">ชุบเสร็จแล้ว</option>
                 <option value="รอรับสินค้า">รอรับสินค้า</option>
+                <option value="เครดิตเรียกเก็บเงิน">เครดิตเรียกเก็บเงิน</option>
+                <option value="ชำระเงินเรียบร้อย">ชำระเงินเรียบร้อย</option>
               </select>
             </div>
           </div>
@@ -638,7 +643,7 @@
       </div>
       <div class="page" id="page-status">
         <!-- Summary Cards -->
-        <div class="stats-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+        <div class="stats-grid" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;">
           <div class="stat-card" style="cursor:pointer;border-left:4px solid #185FA5;" onclick="filterStatusPage('')">
             <div class="stat-label">งานทั้งหมด</div>
             <div class="stat-value" id="st-all" style="color:#185FA5;">—</div>
@@ -654,41 +659,90 @@
             <div class="stat-value" id="st-plating" style="color:#004085;">—</div>
             <div class="stat-sub">รายการ</div>
           </div>
-          <div class="stat-card" style="cursor:pointer;border-left:4px solid #155724;" onclick="filterStatusPage('เสร็จแล้ว')">
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #155724;" onclick="filterStatusPage('ชุบเสร็จแล้ว')">
             <div class="stat-label">เสร็จแล้ว</div>
             <div class="stat-value" id="st-done" style="color:#155724;">—</div>
             <div class="stat-sub">รายการ</div>
           </div>
-          <div class="stat-card" style="cursor:pointer;border-left:4px solid #721C24;" onclick="filterStatusPage('รอรับสินค้า')">
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #424242;" onclick="filterStatusPage('รอรับสินค้า')">
             <div class="stat-label">รอรับสินค้า</div>
-            <div class="stat-value" id="st-pickup" style="color:#721C24;">—</div>
+            <div class="stat-value" id="st-pickup" style="color:#424242;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #5B2182;" onclick="filterStatusPage('เครดิตเรียกเก็บเงิน')">
+            <div class="stat-label">เครดิตเรียกเก็บเงิน</div>
+            <div class="stat-value" id="st-credit" style="color:#5B2182;">—</div>
+            <div class="stat-sub">รายการ</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;border-left:4px solid #1B5E34;" onclick="filterStatusPage('ชำระเงินเรียบร้อย')">
+            <div class="stat-label">ชำระเงินเรียบร้อย</div>
+            <div class="stat-value" id="st-paid" style="color:#1B5E34;">—</div>
             <div class="stat-sub">รายการ</div>
           </div>
         </div>
 
         <div class="card">
           <div class="ov" id="ov-status"><span class="spin">↻</span> กำลังโหลด...</div>
-          <div class="card-head">
+          <div class="card-head" style="flex-wrap:wrap;gap:8px;">
             <div>
               <div class="card-title">
                 <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>ติดตามสถานะงาน
               </div>
               <div class="card-sub" id="status-count">—</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="status-filter" onchange="renderStatusTable()" style="font-size:12px;padding:6px 8px;border-radius:var(--r);border:1px solid var(--border-md);">
-                <option value="">ทุกสถานะ</option>
-                <option value="รอดำเนินการ">รอดำเนินการ</option>
-                <option value="กำลังชุบ">กำลังชุบ</option>
-                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
-                <option value="รอรับสินค้า">รอรับสินค้า</option>
+  <div style="display:flex;gap:8px;align-items:center;">
+              <div style="font-size:11px;color:var(--text-3);">แสดง</div>
+              <select id="status-page-size" onchange="renderStatusTable()" style="font-size:12px;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border-md);background:var(--bg);">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="9999">ทั้งหมด</option>
               </select>
-              <input type="text" id="status-search" placeholder="ค้นหา Job ID / ลูกค้า..."
-                oninput="renderStatusTable()" style="font-size:12px;padding:6px 10px;width:180px;" />
+              <div style="font-size:11px;color:var(--text-3);">รายการ</div>
               <button class="btn btn-sm" onclick="loadStatusPage()">
                 <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 15a9 9 0 1 0 .49-3.66"/></svg>รีเฟรช
               </button>
             </div>
+          </div>
+          <!-- Status filter bar -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:end;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">ค้นหา</div>
+              <input type="text" id="status-search" placeholder="Job ID / ลูกค้า / ชิ้นงาน..."
+                oninput="renderStatusTable()" style="width:100%;font-size:12px;" />
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">รหัส/ชื่อลูกค้า</div>
+              <input type="text" id="status-cust" placeholder="รหัส หรือ ชื่อสถานประกอบการ..."
+                oninput="renderStatusTable()" style="width:100%;font-size:12px;" />
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">สถานะ</div>
+              <select id="status-filter" onchange="renderStatusTable()" style="width:100%;font-size:12px;padding:7px 8px;">
+  <option value="">ทุกสถานะ</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="กำลังชุบ">กำลังชุบ</option>
+                <option value="ชุบเสร็จแล้ว">ชุบเสร็จแล้ว</option>
+                <option value="รอรับสินค้า">รอรับสินค้า</option>
+                <option value="เครดิตเรียกเก็บเงิน">เครดิตเรียกเก็บเงิน</option>
+                <option value="ชำระเงินเรียบร้อย">ชำระเงินเรียบร้อย</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;margin-bottom:4px;">ประเภทชุบ</div>
+              <select id="status-plattype" onchange="renderStatusTable()" style="width:100%;font-size:12px;padding:7px 8px;">
+                <option value="">ทุกประเภท</option>
+                <option value="ซิงค์ (Zinc)">ซิงค์ (Zinc)</option>
+                <option value="โครม 3 (Cr3)">โครม 3 (Cr3)</option>
+                <option value="โครม 6 (Cr6)">โครม 6 (Cr6)</option>
+                <option value="EDP">EDP</option>
+              </select>
+            </div>
+            <button class="btn btn-sm" onclick="clearStatusFilter()" style="margin-top:18px;">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ล้าง
+            </button>
           </div>
           <div class="tbl-wrap" id="status-table-body">
             <div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/></svg>กำลังโหลด...</div>
@@ -712,6 +766,8 @@ let currentUserEmail = '';
 let allCustomers = [];
 let allJobs = [];
 let cbCounter = 0;
+let jobSortKey = 'jobId';
+let jobSortAsc = true;
 
 const PAGE_TITLES = {
   dashboard:'Dashboard', customers:'ข้อมูลลูกค้า',
@@ -1082,10 +1138,12 @@ function clearJobFilter() {
 }
 
 const STATUS_COLOR = {
-  'รอดำเนินการ': 'background:#FFF3CD;color:#856404;',
-  'กำลังชุบ':   'background:#CCE5FF;color:#004085;',
-  'เสร็จแล้ว':  'background:#D4EDDA;color:#155724;',
-  'รอรับสินค้า': 'background:#F8D7DA;color:#721C24;',
+  'รอดำเนินการ':         'background:#FFD6E0;color:#8B1A4A;',
+  'กำลังชุบ':            'background:#FFE0B2;color:#8B3A00;',
+  'ชุบเสร็จแล้ว':        'background:#FFF9C4;color:#7A6A00;',
+  'รอรับสินค้า':         'background:#EEEEEE;color:#424242;',
+  'เครดิตเรียกเก็บเงิน': 'background:#E8D5F5;color:#5B2182;',
+  'ชำระเงินเรียบร้อย':   'background:#C8F0D8;color:#1B5E34;',
 };
 
 function renderJobsTable(rows) {
@@ -1109,22 +1167,24 @@ function renderJobsTable(rows) {
     el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>ไม่มีรายการ</div>';
     return;
   }
+  const thStyle = 'cursor:pointer;user-select:none;';
+  const sortIcon = function(k) { return jobSortKey===k ? (jobSortAsc?'↑':'↓') : '↕'; };
   el.innerHTML = '<table><thead><tr>'
-    + '<th style="width:110px">Job ID</th>'
-    + '<th style="width:90px">วันที่รับ</th>'
-    + '<th style="width:100px">วันที่ต้องการรับ</th>'
-    + '<th style="width:90px">รหัสลูกค้า</th>'
-    + '<th style="width:140px">ชื่อสถานประกอบการ</th>'
-    + '<th style="width:160px">ชิ้นงาน</th>'
-    + '<th style="width:100px">ประเภทชุบ</th>'
-    + '<th style="width:80px">สี</th>'
-    + '<th style="width:65px">จำนวน</th>'
-    + '<th style="width:65px">น้ำหนัก</th>'
-    + '<th style="width:145px">สถานะงาน</th>'
+    + '<th style="width:110px;'+thStyle+'" onclick="sortJobs(\'jobId\')">Job ID '+sortIcon('jobId')+'</th>'
+    + '<th style="width:90px;'+thStyle+'" onclick="sortJobs(\'dateIn\')">วันที่รับ '+sortIcon('dateIn')+'</th>'
+    + '<th style="width:100px;'+thStyle+'" onclick="sortJobs(\'dateWant\')">วันที่ต้องการรับ '+sortIcon('dateWant')+'</th>'
+    + '<th style="width:90px;'+thStyle+'" onclick="sortJobs(\'custCode\')">รหัสลูกค้า '+sortIcon('custCode')+'</th>'
+    + '<th style="width:140px;'+thStyle+'" onclick="sortJobs(\'custName\')">ชื่อสถานประกอบการ '+sortIcon('custName')+'</th>'
+    + '<th style="width:160px;">ชิ้นงาน</th>'
+    + '<th style="width:100px;'+thStyle+'" onclick="sortJobs(\'platType\')">ประเภทชุบ '+sortIcon('platType')+'</th>'
+    + '<th style="width:80px;">สี</th>'
+    + '<th style="width:65px;'+thStyle+'" onclick="sortJobs(\'qty\')">จำนวน '+sortIcon('qty')+'</th>'
+    + '<th style="width:65px;'+thStyle+'" onclick="sortJobs(\'weight\')">น้ำหนัก '+sortIcon('weight')+'</th>'
+    + '<th style="width:145px;">สถานะงาน</th>'
     + '</tr></thead><tbody>'
     + rows.map(function(j) {
         const sc = STATUS_COLOR[j.status]||'';
-        const opts = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+        const opts = ['รอดำเนินการ','กำลังชุบ','ชุบเสร็จแล้ว','รอรับสินค้า','เครดิตเรียกเก็บเงิน','ชำระเงินเรียบร้อย'].map(function(s){
           return '<option value="'+s+'"'+(j.status===s?' selected':'')+'>'+s+'</option>';
         }).join('');
         return '<tr style="cursor:pointer;" onclick="openJobDetail('+j.rowIndex+')">'
@@ -1136,8 +1196,8 @@ function renderJobsTable(rows) {
           + '<td title="' + (j.desc||'') + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">' + (j.desc||'—') + '</td>'
           + '<td>' + (j.platType||'—') + '</td>'
           + '<td title="' + (j.color||'') + '">' + (j.color||'—').substring(0,10) + '</td>'
-          + '<td style="text-align:right;">' + (j.qty||'—') + '</td>'
-          + '<td style="text-align:right;">' + (j.weight ? j.weight+' kg' : '—') + '</td>'
+          + '<td>' + (j.qty||'—') + '</td>'
+          + '<td>' + (j.weight ? j.weight+' kg' : '—') + '</td>'
           + '<td onclick="event.stopPropagation()">'
           + '<select style="font-size:11px;padding:3px 6px;border-radius:20px;font-weight:600;border:1px solid var(--border-md);cursor:pointer;'+sc+'" onchange="quickUpdateStatus('+j.rowIndex+',this.value)">'+opts+'</select>'
           + '</td></tr>';
@@ -1167,7 +1227,7 @@ function openJobDetail(rowIndex) {
   document.getElementById('modal-job-title').textContent = 'รายละเอียดงาน: ' + (j.jobId||'');
   const sc = STATUS_COLOR[j.status]||'';
   const total = j.total ? '฿'+Number(j.total).toLocaleString('th-TH',{minimumFractionDigits:2}) : '—';
-  const statBtns = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+  const statBtns = ['รอดำเนินการ','กำลังชุบ','ชุบเสร็จแล้ว','รอรับสินค้า','เครดิตเรียกเก็บเงิน','ชำระเงินเรียบร้อย'].map(function(s){
     const active = j.status===s ? 'background:var(--brand);color:#fff;border-color:var(--brand);' : '';
     return '<button class="btn btn-sm job-stat-btn" style="'+active+'" data-row="'+j.rowIndex+'" data-status="'+s+'">'+s+'</button>';
   }).join('');
@@ -1512,7 +1572,7 @@ function updateStatusSummary() {
   if (allEl) allEl.textContent = allJobs.length;
   document.getElementById('st-pending').textContent = counts['รอดำเนินการ'];
   document.getElementById('st-plating').textContent = counts['กำลังชุบ'];
-  document.getElementById('st-done').textContent    = counts['เสร็จแล้ว'];
+  document.getElementById('st-done').textContent    = counts['ชุบเสร็จแล้ว'];
   document.getElementById('st-pickup').textContent  = counts['รอรับสินค้า'];
 }
 
@@ -1522,23 +1582,41 @@ function filterStatusPage(status) {
 }
 
 function renderStatusTable() {
-  const el     = document.getElementById('status-table-body');
-  const filter = document.getElementById('status-filter').value;
-  const q      = (document.getElementById('status-search').value||'').trim().toLowerCase();
+  const el       = document.getElementById('status-table-body');
+  const filter   = (document.getElementById('status-filter')||{}).value||'';
+  const plattype = (document.getElementById('status-plattype')||{}).value||'';
+  const q        = ((document.getElementById('status-search')||{}).value||'').trim().toLowerCase();
+  const cust     = ((document.getElementById('status-cust')||{}).value||'').trim().toLowerCase();
+  const pageSize = parseInt((document.getElementById('status-page-size')||{}).value||'20')||20;
 
   const filtered = allJobs.filter(function(j) {
-    if (filter && j.status !== filter) return false;
+    if (filter   && j.status   !== filter)   return false;
+    if (plattype && j.platType !== plattype) return false;
     if (q && !(
       String(j.jobId   ||'').toLowerCase().includes(q) ||
-      String(j.custName||'').toLowerCase().includes(q) ||
-      String(j.custCode||'').toLowerCase().includes(q) ||
       String(j.desc    ||'').toLowerCase().includes(q)
+    )) return false;
+    if (cust && !(
+      String(j.custCode||'').toLowerCase().includes(cust) ||
+      String(j.custName||'').toLowerCase().includes(cust)
     )) return false;
     return true;
   });
 
+  // ── 6: อัปเดต summary cards ตาม filter ──
+  const counts = { 'รอดำเนินการ':0, 'กำลังชุบ':0, 'เสร็จแล้ว':0, 'รอรับสินค้า':0 };
+  filtered.forEach(function(j){ if (counts[j.status]!==undefined) counts[j.status]++; });
+  const allEl = document.getElementById('st-all');
+  if (allEl) allEl.textContent = filtered.length;
+  const p = document.getElementById('st-pending'); if(p) p.textContent = counts['รอดำเนินการ'];
+  const pl= document.getElementById('st-plating'); if(pl) pl.textContent= counts['กำลังชุบ'];
+  const d = document.getElementById('st-done');    if(d) d.textContent = counts['ชุบเสร็จแล้ว'];
+  const pk= document.getElementById('st-pickup');  if(pk) pk.textContent= counts['รอรับสินค้า'];
+
+  const showing = filtered.slice(0, pageSize);
   const countEl = document.getElementById('status-count');
-  if (countEl) countEl.textContent = 'แสดง ' + filtered.length + ' / ' + allJobs.length + ' รายการ';
+  if (countEl) countEl.textContent = 'แสดง '+ showing.length +' / '+ allJobs.length +' รายการ'
+    + (filtered.length < allJobs.length ? ' (กรองแล้ว)' : '');
 
   if (!filtered.length) {
     el.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/></svg>ไม่พบรายการ</div>';
@@ -1556,9 +1634,9 @@ function renderStatusTable() {
     + '<th style="width:110px">ผู้รับงาน</th>'
     + '<th style="width:150px">สถานะ</th>'
     + '</tr></thead><tbody>'
-    + filtered.map(function(j) {
+    + showing.map(function(j) {
         const sc   = STATUS_COLOR[j.status]||'';
-        const opts = ['รอดำเนินการ','กำลังชุบ','เสร็จแล้ว','รอรับสินค้า'].map(function(s){
+        const opts = ['รอดำเนินการ','กำลังชุบ','ชุบเสร็จแล้ว','รอรับสินค้า','เครดิตเรียกเก็บเงิน','ชำระเงินเรียบร้อย'].map(function(s){
           return '<option value="'+s+'"'+(j.status===s?' selected':'')+'>'+s+'</option>';
         }).join('');
         // เน้น overdue (ต้องการรับแล้วแต่ยังไม่เสร็จ)
@@ -1578,6 +1656,40 @@ function renderStatusTable() {
           + '</td></tr>';
       }).join('')
     + '</tbody></table>';
+}
+
+// ── SORT JOBS ────────────────────────────────────────────
+function sortJobs(key) {
+  if (jobSortKey === key) {
+    jobSortAsc = !jobSortAsc;
+  } else {
+    jobSortKey = key;
+    jobSortAsc = true;
+  }
+  allJobs.sort(function(a, b) {
+    const av = String(a[key]||'').toLowerCase();
+    const bv = String(b[key]||'').toLowerCase();
+    // ตัวเลข sort ด้วยค่าตัวเลข
+    const an = parseFloat(a[key]);
+    const bn = parseFloat(b[key]);
+    if (!isNaN(an) && !isNaN(bn)) return jobSortAsc ? an-bn : bn-an;
+    if (av < bv) return jobSortAsc ? -1 : 1;
+    if (av > bv) return jobSortAsc ? 1 : -1;
+    return 0;
+  });
+  filterJobs();
+}
+
+// ── CLEAR STATUS FILTER ───────────────────────────────────
+function clearStatusFilter() {
+  ['status-search','status-cust'].forEach(function(id){
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  const sf = document.getElementById('status-filter');
+  const pt = document.getElementById('status-plattype');
+  if (sf) sf.value = '';
+  if (pt) pt.value = '';
+  renderStatusTable();
 }
 
 // ── GOOGLE SIGN-IN (popup mode — ไม่รบกวน JSONP) ─────────
