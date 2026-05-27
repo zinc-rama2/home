@@ -295,9 +295,13 @@
           <div class="form-grid">
             <div class="fg">
               <label for="f-paytype">ประเภทการชำระ <span style="color:#C53030">*</span></label>
-              <select id="f-paytype"><option value="">-- เลือก --</option><option value="เครดิต">เครดิต</option><option value="เงินสด / โอน">เงินสด / โอน</option></select>
+              <select id="f-paytype" onchange="toggleCreditDays(this)"><option value="">-- เลือก --</option><option value="เครดิต">เครดิต</option><option value="เงินสด / โอน">เงินสด / โอน</option></select>
             </div>
-            <div class="fg"><label for="f-creditdays">จำนวนวันเครดิต</label><input type="number" id="f-creditdays" placeholder="30" min="0" /></div>
+            <div class="fg">
+              <label for="f-creditdays">จำนวนวันเครดิต</label>
+              <input type="number" id="f-creditdays" placeholder="กรุณาเลือกประเภทเครดิตก่อน" min="0"
+                disabled style="opacity:.5;cursor:not-allowed;" />
+            </div>
             <div class="fg"><label for="f-billname">ชื่อหัวบิล</label><input type="text" id="f-billname" placeholder="เช่น บริษัท ABC จำกัด" /></div>
             <div class="fg"><label for="f-billstart">วันที่เริ่มบิล <span style="color:#C53030">*</span></label><input type="date" id="f-billstart" class="req-field" /></div>
             <div class="fg"><label for="f-billdate">วางบิลวันที่ (ของเดือน)</label><input type="number" id="f-billdate" placeholder="เช่น 5 = วันที่ 5 ของทุกเดือน" min="1" max="31" /></div>
@@ -1067,7 +1071,15 @@ function goPage(id, el) {
   if (id === 'customers') loadCustomers();
   if (id === 'jobs') { loadJobs(); clearJobForm(); }
   if (id === 'status')  { loadStatusPage(); }
-  if (id === 'invoice') { loadInvoicePage(); }
+  if (id === 'invoice') {
+    // ไม่ auto-load เพื่อประสิทธิภาพ — แสดงปุ่มให้กดโหลดเอง
+    const b = document.getElementById('inv-jobs-body');
+    if (b && b.querySelector('.empty') && allJobs.length > 0) {
+      filterInvoiceJobs(); // ใช้ข้อมูลที่มีอยู่แล้ว
+    } else if (b && b.querySelector('.empty')) {
+      b.innerHTML = '<div class="empty" style="padding:40px;"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border-md)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><div style="margin-top:8px;">กดปุ่ม รีเฟรช เพื่อโหลดข้อมูล</div></div>';
+    }
+  }
   if (id === 'factory') { loadFactoryData(); }
   if (id === 'dashboard') {
     const el2 = document.getElementById('dash-customers');
@@ -1214,6 +1226,12 @@ function fillCustomerForm(c) {
   document.getElementById('f-billname').value   = c.billname  || '';
   document.getElementById('f-billstart').value  = c.billstart || '';
   document.getElementById('f-billdate').value   = c.billdate  || '';
+  const ti = document.getElementById('f-taxid');  if(ti) ti.value  = c.taxid  || '';
+  const br = document.getElementById('f-branch'); if(br) br.value  = c.branch || '';
+  const ws = document.getElementById('f-website');if(ws) ws.value  = c.website|| '';
+  // unlock credit days if paytype = เครดิต
+  const ptEl = document.getElementById('f-paytype');
+  if (ptEl) toggleCreditDays(ptEl);
   document.getElementById('f-mode').value          = 'update';
   document.getElementById('f-original-name').value = c.name || '';
   const btn = document.querySelector('#page-customers .btn-primary:last-of-type');
@@ -1255,7 +1273,10 @@ async function saveCustomer() {
     code: document.getElementById('f-code').value.trim(), name, addr, biztel, contact, tel,
     billstart, billdate: document.getElementById('f-billdate').value,
     billname: document.getElementById('f-billname').value, paytype,
-    creditdays: document.getElementById('f-creditdays').value,
+    creditdays: paytype === 'เครดิต' ? document.getElementById('f-creditdays').value : '',
+    taxid:   (document.getElementById('f-taxid')  ||{value:''}).value.trim(),
+    branch:  (document.getElementById('f-branch') ||{value:''}).value.trim(),
+    website: (document.getElementById('f-website')||{value:''}).value.trim(),
     mode: document.getElementById('f-mode').value,
     searchName: document.getElementById('f-original-name').value || name,
   };
@@ -1885,6 +1906,24 @@ function applyJobSort() {
     if (av > bv) return jobSortAsc ? 1 : -1;
     return 0;
   });
+}
+
+// ── CREDIT DAYS TOGGLE ───────────────────────────────────
+function toggleCreditDays(sel) {
+  const el = document.getElementById('f-creditdays');
+  if (!el) return;
+  if (sel.value === 'เครดิต') {
+    el.disabled = false;
+    el.style.opacity = '1';
+    el.style.cursor  = 'auto';
+    el.placeholder   = '30';
+  } else {
+    el.disabled = true;
+    el.value     = '';
+    el.style.opacity = '.5';
+    el.style.cursor  = 'not-allowed';
+    el.placeholder   = 'เฉพาะประเภทเครดิต';
+  }
 }
 
 // ── SORT STATUS PAGE ──────────────────────────────────────
