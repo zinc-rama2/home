@@ -281,15 +281,31 @@
             <div class="fg"><label>รหัสลูกค้า <span style="font-weight:400;color:var(--text-3)">(ระบบกำหนด)</span></label><input type="text" id="f-code" placeholder="ระบบกำหนดอัตโนมัติ" disabled style="opacity:.5;cursor:not-allowed;" /></div>
             <div class="fg s2"><label for="f-name">ชื่อสถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-name" placeholder="ชื่อบริษัท / ร้านค้า" /></div>
             <div class="fg s3"><label for="f-addr">ที่อยู่ <span style="color:#C53030">*</span></label><textarea id="f-addr" class="req-field" placeholder="ที่อยู่สถานประกอบการ"></textarea></div>
-            <div class="fg"><label for="f-biztel">เบอร์สถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-biztel" class="req-field" placeholder="02-xxx-xxxx" inputmode="numeric" /></div>
+            <div class="fg"><label for="f-biztel">เบอร์สถานประกอบการ <span style="color:#C53030">*</span></label><input type="text" id="f-biztel" class="req-field" placeholder="02xxxxxxxx" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9-]/g,'')" /></div>
             <div class="fg"><label for="f-contact">ชื่อผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-contact" class="req-field" placeholder="ชื่อ-นามสกุล" /></div>
-            <div class="fg"><label for="f-tel">เบอร์ผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-tel" class="req-field" placeholder="08x-xxx-xxxx" inputmode="numeric" /></div>
+            <div class="fg"><label for="f-tel">เบอร์ผู้ประสานงาน <span style="color:#C53030">*</span></label><input type="text" id="f-tel" class="req-field" placeholder="08xxxxxxxx" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9-]/g,'')" /></div>
           </div>
           <div class="sec-label">ข้อมูลทางกฎหมาย</div>
           <div class="form-grid">
-            <div class="fg"><label for="f-taxid">เลขประจำตัวผู้เสียภาษี</label><input type="text" id="f-taxid" placeholder="1-2345-67890-12-3" maxlength="17" /></div>
-            <div class="fg"><label for="f-branch">สาขา</label><input type="text" id="f-branch" placeholder="สำนักงานใหญ่ หรือ สาขาที่..." /></div>
-            <div class="fg"><label for="f-website">เว็บไซต์ / อีเมล์</label><input type="text" id="f-website" placeholder="www.example.com" /></div>
+            <div class="fg">
+              <label for="f-taxid">เลขประจำตัวผู้เสียภาษี</label>
+              <input type="text" id="f-taxid" placeholder="0000000000000" maxlength="13"
+                oninput="this.value=this.value.replace(/[^0-9]/g,'')" inputmode="numeric" />
+            </div>
+            <div class="fg">
+              <label>สาขา</label>
+              <div style="display:flex;gap:6px;">
+                <select id="f-branch-type" onchange="toggleBranchNo(this)" style="flex:0 0 auto;width:140px;">
+                  <option value="สำนักงานใหญ่">สำนักงานใหญ่</option>
+                  <option value="สาขาที่">สาขาที่</option>
+                </select>
+                <input type="text" id="f-branch-no" placeholder="เลขสาขา" maxlength="5"
+                  oninput="this.value=this.value.replace(/[^0-9]/g,'')" inputmode="numeric"
+                  style="display:none;flex:1;" />
+              </div>
+              <input type="hidden" id="f-branch" value="สำนักงานใหญ่" />
+            </div>
+            <div class="fg"><label for="f-website">เว็บไซต์ / อีเมล์</label><input type="text" id="f-website" placeholder="www.example.com หรือ email@domain.com" /></div>
           </div>
           <div class="sec-label">การชำระเงิน</div>
           <div class="form-grid">
@@ -1227,8 +1243,21 @@ function fillCustomerForm(c) {
   document.getElementById('f-billstart').value  = c.billstart || '';
   document.getElementById('f-billdate').value   = c.billdate  || '';
   const ti = document.getElementById('f-taxid');  if(ti) ti.value  = c.taxid  || '';
-  const br = document.getElementById('f-branch'); if(br) br.value  = c.branch || '';
   const ws = document.getElementById('f-website');if(ws) ws.value  = c.website|| '';
+  // set branch
+  const branchVal = c.branch||'สำนักงานใหญ่';
+  const brType = document.getElementById('f-branch-type');
+  const brNo   = document.getElementById('f-branch-no');
+  const brHid  = document.getElementById('f-branch');
+  if (brHid) brHid.value = branchVal;
+  if (branchVal.startsWith('สาขาที่') && brType && brNo) {
+    brType.value        = 'สาขาที่';
+    brNo.style.display  = 'flex';
+    brNo.value          = branchVal.replace('สาขาที่','').trim();
+  } else if (brType) {
+    brType.value = 'สำนักงานใหญ่';
+    if (brNo) brNo.style.display = 'none';
+  }
   // unlock credit days if paytype = เครดิต
   const ptEl = document.getElementById('f-paytype');
   if (ptEl) toggleCreditDays(ptEl);
@@ -1241,8 +1270,14 @@ function fillCustomerForm(c) {
 }
 
 function clearCustomerForm() {
-  ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays','f-taxid','f-branch','f-website']
+  ['f-code','f-name','f-addr','f-biztel','f-contact','f-tel','f-billname','f-billstart','f-billdate','f-creditdays','f-taxid','f-website']
     .forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  const brType = document.getElementById('f-branch-type');
+  const brNo   = document.getElementById('f-branch-no');
+  const brHid  = document.getElementById('f-branch');
+  if (brType) brType.value = 'สำนักงานใหญ่';
+  if (brNo)   { brNo.value=''; brNo.style.display='none'; }
+  if (brHid)  brHid.value = 'สำนักงานใหญ่';
   document.getElementById('f-paytype').value = '';
   document.getElementById('f-mode').value          = 'insert';
   document.getElementById('f-original-name').value = '';
@@ -1908,6 +1943,20 @@ function applyJobSort() {
   });
 }
 
+// ── BRANCH TYPE TOGGLE ───────────────────────────────────
+function toggleBranchNo(sel) {
+  const noEl   = document.getElementById('f-branch-no');
+  const hidden = document.getElementById('f-branch');
+  if (sel.value === 'สาขาที่') {
+    noEl.style.display = 'flex';
+    hidden.value = 'สาขาที่ ' + (noEl.value||'');
+    noEl.oninput = function() { hidden.value = 'สาขาที่ ' + this.value; };
+  } else {
+    noEl.style.display = 'none';
+    hidden.value = 'สำนักงานใหญ่';
+  }
+}
+
 // ── CREDIT DAYS TOGGLE ───────────────────────────────────
 function toggleCreditDays(sel) {
   const el = document.getElementById('f-creditdays');
@@ -2015,16 +2064,23 @@ function loadInvoicePage() {
   }).catch(function() { toast('เชื่อมต่อไม่ได้', true); });
 }
 
+function clearInvFilter() {
+  ['inv-search','inv-cust-search'].forEach(function(id){ const el=document.getElementById(id); if(el) el.value=''; });
+  const sf = document.getElementById('inv-status-filter'); if(sf) sf.value='ชุบเสร็จแล้ว';
+  const pt = document.getElementById('inv-plattype'); if(pt) pt.value='';
+  filterInvoiceJobs();
+}
+
 function filterInvoiceJobs() {
-  const q        = (document.getElementById('inv-search').value||'').trim().toLowerCase();
+  const q        = ((document.getElementById('inv-search')||{}).value||'').trim().toLowerCase();
   const custQ    = ((document.getElementById('inv-cust-search')||{}).value||'').trim().toLowerCase();
-  const plattype = (document.getElementById('inv-plattype').value||'');
-  const allChk   = document.querySelector('.inv-sc-all') && document.querySelector('.inv-sc-all').checked;
-  const checks   = allChk ? [] : Array.from(document.querySelectorAll('.inv-sc:checked')).map(function(cb){ return cb.value; });
+  const plattype = ((document.getElementById('inv-plattype')||{}).value||'');
+  const status   = ((document.getElementById('inv-status-filter')||{}).value||'');
   const el       = document.getElementById('inv-jobs-body');
+  if (!el) return;
 
   const filtered = allJobs.filter(function(j) {
-    if (!allChk && checks.length && !checks.includes(j.status)) return false;
+    if (status && j.status !== status) return false;
     if (q && !(String(j.jobId||'').toLowerCase().includes(q)||String(j.custName||'').toLowerCase().includes(q)||String(j.contact||'').toLowerCase().includes(q))) return false;
     if (custQ && !(String(j.custCode||'').toLowerCase().includes(custQ)||String(j.custName||'').toLowerCase().includes(custQ))) return false;
     if (plattype && j.platType !== plattype) return false;
